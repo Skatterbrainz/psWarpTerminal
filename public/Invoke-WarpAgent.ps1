@@ -1,0 +1,151 @@
+function Invoke-WarpAgent {
+    <#
+    .SYNOPSIS
+    Runs a Warp Oz agent locally or in the cloud.
+
+    .DESCRIPTION
+    This function invokes the Warp CLI to run an agent. By default the agent runs locally. Use the -Cloud switch to dispatch a remote cloud agent.
+
+    .PARAMETER Prompt
+    Required. The prompt for the agent to carry out.
+
+    .PARAMETER Cloud
+    Switch to dispatch the agent remotely instead of running locally.
+
+    .PARAMETER Name
+    Optional. A name for this agent task.
+
+    .PARAMETER Model
+    Optional. Override the base model. Use Get-WarpModel to see available models.
+
+    .PARAMETER Environment
+    Optional. Cloud environment ID to use.
+
+    .PARAMETER Skill
+    Optional. Skill spec to use as the base prompt (e.g. "repo:skill_name").
+
+    .PARAMETER Conversation
+    Optional. Continue an existing conversation by ID.
+
+    .PARAMETER Mcp
+    Optional. One or more MCP server specs (path or inline JSON).
+
+    .PARAMETER ConfigFile
+    Optional. Path to a YAML or JSON configuration file.
+
+    .PARAMETER Cwd
+    Local only. Working directory for the agent.
+
+    .PARAMETER Share
+    Local only. Share the session (e.g. "team:view").
+
+    .PARAMETER Profile
+    Local only. Agent profile ID to configure the session.
+
+    .PARAMETER Open
+    Cloud only. Open the session in Warp once available.
+
+    .PARAMETER Team
+    Cloud only. Make the task visible to all team members.
+
+    .PARAMETER NoEnvironment
+    Cloud only. Do not run in an environment.
+
+    .PARAMETER Host_
+    Cloud only. Where the job should be hosted.
+
+    .PARAMETER Attach
+    Cloud only. One or more image file paths to attach (max 5).
+
+    .PARAMETER ComputerUse
+    Cloud only. Enable computer use capabilities.
+
+    .PARAMETER NoComputerUse
+    Cloud only. Disable computer use capabilities.
+
+    .EXAMPLE
+    Invoke-WarpAgent -Prompt "Build a REST API"
+
+    .EXAMPLE
+    Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
+    #>
+    [CmdletBinding(DefaultParameterSetName = 'Local')]
+    param(
+        [Parameter(Mandatory, Position = 0)]
+        [string]$Prompt,
+
+        [Parameter(ParameterSetName = 'Cloud', Mandatory)]
+        [switch]$Cloud,
+
+        [string]$Name,
+        [string]$Model,
+        [string]$Environment,
+        [string]$Skill,
+        [string]$Conversation,
+        [string[]]$Mcp,
+        [string]$ConfigFile,
+
+        # Local-only
+        [Parameter(ParameterSetName = 'Local')]
+        [string]$Cwd,
+        [Parameter(ParameterSetName = 'Local')]
+        [string]$Share,
+        [Parameter(ParameterSetName = 'Local')]
+        [string]$Profile,
+
+        # Cloud-only
+        [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$Open,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$Team,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$NoEnvironment,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [string]$Host_,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [string[]]$Attach,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$ComputerUse,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$NoComputerUse
+    )
+
+    # Auto-continue: if no explicit Conversation, try the stashed one
+    if (-not $Conversation -and $script:LastAgentResult) {
+        $prev = $script:LastAgentResult
+        $autoId = $prev.conversation_id ?? $prev.conversationId ?? $prev.conversation ?? $prev.id
+        if ($autoId) {
+            Write-Verbose "Auto-continuing conversation: $autoId"
+            $Conversation = $autoId
+        }
+    }
+
+    $sub = if ($Cloud) { 'run-cloud' } else { 'run' }
+    $a = [System.Collections.Generic.List[string]]@('agent', $sub, '--prompt', $Prompt)
+
+    if ($Name)         { $a.Add('-n');            $a.Add($Name) }
+    if ($Model)        { $a.Add('--model');       $a.Add($Model) }
+    if ($Environment)  { $a.Add('-e');            $a.Add($Environment) }
+    if ($Skill)        { $a.Add('--skill');       $a.Add($Skill) }
+    if ($Conversation) { $a.Add('--conversation');$a.Add($Conversation) }
+    if ($ConfigFile)   { $a.Add('-f');            $a.Add($ConfigFile) }
+    foreach ($m in $Mcp) { $a.Add('--mcp'); $a.Add($m) }
+
+    # Local params
+    if ($Cwd)     { $a.Add('-C');        $a.Add($Cwd) }
+    if ($Share)   { $a.Add('--share');   $a.Add($Share) }
+    if ($Profile) { $a.Add('--profile'); $a.Add($Profile) }
+
+    # Cloud params
+    if ($Open)           { $a.Add('--open') }
+    if ($Team)           { $a.Add('--team') }
+    if ($NoEnvironment)  { $a.Add('--no-environment') }
+    if ($Host_)          { $a.Add('--host'); $a.Add($Host_) }
+    if ($ComputerUse)    { $a.Add('--computer-use') }
+    if ($NoComputerUse)  { $a.Add('--no-computer-use') }
+    foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
+
+    $result = Invoke-WarpCli -Arguments $a
+    if ($result) { $script:LastAgentResult = $result }
+    $result
+}
