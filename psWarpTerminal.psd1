@@ -4,7 +4,7 @@
 
 @{
 RootModule = 'psWarpTerminal.psm1'
-ModuleVersion = '1.0.1'
+ModuleVersion = '1.1.0'
 # CompatiblePSEditions = @()
 GUID = '455614f9-bb6e-4639-9410-4ed287a61c5f'
 Author = 'skatterbrainz'
