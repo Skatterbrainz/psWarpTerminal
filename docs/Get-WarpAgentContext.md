@@ -6,27 +6,21 @@ Locale: en-US
 Module Name: psWarpTerminal
 ms.date: 02/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-WarpRun
+title: Get-WarpAgentContext
 ---
 
-# Get-WarpRun
+# Get-WarpAgentContext
 
 ## SYNOPSIS
 
-Retrieves a list of Warp runs.
+Returns the stored context from the last Invoke-WarpAgent call.
 
 ## SYNTAX
 
-### List (Default)
+### __AllParameterSets
 
 ```
-Get-WarpRun [-Limit <int>] [<CommonParameters>]
-```
-
-### ById
-
-```
-Get-WarpRun [-TaskId] <string> [<CommonParameters>]
+Get-WarpAgentContext [-AsObject] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -36,58 +30,43 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available runs or get a specific run by ID.
+This function returns the module-scoped result object from the most recent Invoke-WarpAgent invocation.
+The stored context is used for automatic conversation continuation on follow-on prompts.
+By default the raw stored value is returned.
+Use -AsObject to force conversion from JSON string to a PSCustomObject.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpRun
+Get-WarpAgentContext
+
+### EXAMPLE 2
+
+Get-WarpAgentContext -AsObject
+
+### EXAMPLE 3
+
+(Get-WarpAgentContext -AsObject).conversation_id
 
 ## PARAMETERS
 
-### -Limit
+### -AsObject
 
-Optional.
-The maximum number of runs to retrieve.
-Defaults to 10.
+Convert the stored context from a JSON string to a PSCustomObject.
+Useful when the stored result is a JSON-formatted string with escaped characters.
 
 ```yaml
-Type: System.Int32
-DefaultValue: 10
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: List
+- Name: (All)
   Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -TaskId
-
-Required.
-The ID of a specific run to retrieve.
-If not provided, all runs will be listed.
-May be piped from another command that outputs an object with an 'Id' property.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases:
-- Id
-ParameterSets:
-- Name: ById
-  Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
@@ -102,10 +81,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
-
-### System.String
-
-{{ Fill in the Description }}
 
 ## OUTPUTS
 

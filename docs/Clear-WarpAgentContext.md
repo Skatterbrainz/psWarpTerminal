@@ -6,21 +6,21 @@ Locale: en-US
 Module Name: psWarpTerminal
 ms.date: 02/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-WarpSecret
+title: Clear-WarpAgentContext
 ---
 
-# Get-WarpSecret
+# Clear-WarpAgentContext
 
 ## SYNOPSIS
 
-Retrieves a list of Warp secrets.
+Clears the stored agent conversation context.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```
-Get-WarpSecret [<CommonParameters>]
+Clear-WarpAgentContext [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -30,13 +30,13 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available secrets.
+Resets the module-scoped agent result so the next Invoke-WarpAgent call starts a fresh conversation instead of auto-continuing the previous one.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpSecret
+Clear-WarpAgentContext
 
 ## PARAMETERS
 
