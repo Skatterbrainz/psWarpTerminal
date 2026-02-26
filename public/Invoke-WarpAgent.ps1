@@ -110,14 +110,10 @@ function Invoke-WarpAgent {
         [switch]$NoComputerUse
     )
 
-    # Auto-continue: if no explicit Conversation, try the stashed one
-    if (-not $Conversation -and $script:LastAgentResult) {
-        $prev = $script:LastAgentResult
-        $autoId = $prev.conversation_id ?? $prev.conversationId ?? $prev.conversation ?? $prev.id
-        if ($autoId) {
-            Write-Verbose "Auto-continuing conversation: $autoId"
-            $Conversation = $autoId
-        }
+    # Auto-continue: if no explicit Conversation, try the stashed conversation ID
+    if (-not $Conversation -and $script:LastConversationId) {
+        Write-Verbose "Auto-continuing conversation: $script:LastConversationId"
+        $Conversation = $script:LastConversationId
     }
 
     $sub = if ($Cloud) { 'run-cloud' } else { 'run' }
@@ -146,6 +142,26 @@ function Invoke-WarpAgent {
     foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
 
     $result = Invoke-WarpCli -Arguments $a
-    if ($result) { $script:LastAgentResult = $result }
-    $result
+    if ($result) {
+        $script:LastAgentResult = $result
+
+        # Parse NDJSON events and extract key fields
+        $events = $result -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
+            try { $_ | ConvertFrom-Json } catch {}
+        }
+
+        $convId = ($events | Where-Object type -eq 'system' | Select-Object -First 1).conversation_id
+        if ($convId) { $script:LastConversationId = $convId }
+
+        $agentText = ($events | Where-Object type -eq 'agent').text -join "`n"
+        $files = @($events | Where-Object type -eq 'tool_call' |
+            ForEach-Object { $_.file_paths } | Where-Object { $_ })
+
+        [PSCustomObject]@{
+            ConversationId = $convId
+            Text           = $agentText
+            Files          = $files
+            Events         = $events
+        }
+    }
 }
