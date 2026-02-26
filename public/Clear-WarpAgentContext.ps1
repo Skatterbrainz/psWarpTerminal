@@ -13,5 +13,6 @@ function Clear-WarpAgentContext {
     param()
 
     $script:LastAgentResult = $null
+    $script:LastConversationId = $null
     Write-Verbose 'Agent context cleared.'
 }
