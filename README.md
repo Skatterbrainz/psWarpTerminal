@@ -12,7 +12,7 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` CLI, giving you str
 
 ## 🎯 Overview
 
-This module exposes 24 public functions covering the full surface of the `warp-terminal` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 28 public functions covering the full surface of the `warp-terminal` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## ✨ Features
 
@@ -107,6 +107,8 @@ Invoke-WarpAgent -Prompt "Something completely different"
 Use `-Verbose` to see when auto-continuation is applied. You can always override by passing `-Conversation` explicitly.
 
 ## 📖 Function Reference
+
+Complete list of exported cmdlets (including conversation context helpers):
 
 ### Agent
 
