@@ -30,27 +30,32 @@ function Get-WarpAgentContext {
 
     if ($AsObject -and $script:LastAgentResult -is [string]) {
         $text = $script:LastAgentResult -replace '(?m)^```json\s*' -replace '(?m)^```\s*'
-        # Try single JSON document first
+
+        # Parse NDJSON lines into raw events
+        $events = $null
         try {
-            $text | ConvertFrom-Json
-            return
-        } catch {}
-        # Try wrapping as a JSON array (handles NDJSON / multiple objects per line)
-        try {
-            $lines = $text -split "`n" | Where-Object { $_.Trim() -ne '' }
-            $wrapped = '[' + ($lines -join ',') + ']'
-            $wrapped | ConvertFrom-Json
-            return
-        } catch {}
-        # Try parsing each non-empty line individually
-        try {
-            $text -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
+            $events = @($text -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
                 $_ | ConvertFrom-Json
-            }
-            return
+            })
         } catch {
             Write-Error "Unable to convert stored context to object: $_"
             $script:LastAgentResult
+            return
+        }
+
+        # Normalize all events to uniform columns
+        foreach ($ev in $events) {
+            $filePaths = if ($ev.file_paths) { $ev.file_paths -join '; ' }
+                         elseif ($ev.files) { ($ev.files | ForEach-Object { $_.path }) -join '; ' }
+                         else { $null }
+            [PSCustomObject]@{
+                type            = $ev.type
+                event_type      = $ev.event_type
+                conversation_id = $ev.conversation_id
+                text            = $ev.text
+                tool            = $ev.tool
+                path            = $filePaths
+            }
         }
     } else {
         $script:LastAgentResult
