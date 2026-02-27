@@ -22,7 +22,7 @@ Creates a new Warp scheduled agent.
 ```
 New-WarpSchedule [-Name] <string> [-Cron] <string> [-Prompt] <string> [[-Skill] <string>]
  [[-Model] <string>] [[-Environment] <string>] [[-Mcp] <string[]>] [[-ConfigFile] <string>]
- [[-Host_] <string>] [-Team] [-Personal] [<CommonParameters>]
+ [[-WorkerID] <string>] [-Team] [-Personal] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -109,10 +109,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Host_
+### -WorkerID
 
 Optional.
-Where the job should be hosted.
+Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
 
 ```yaml
 Type: System.String
