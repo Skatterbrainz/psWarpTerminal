@@ -51,8 +51,8 @@ function Invoke-WarpAgent {
     .PARAMETER NoEnvironment
     Cloud only. Do not run in an environment.
 
-    .PARAMETER Host_
-    Cloud only. Where the job should be hosted.
+    .PARAMETER WorkerID
+    Cloud only. Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
 
     .PARAMETER Attach
     Cloud only. One or more image file paths to attach (max 5).
@@ -101,7 +101,7 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$NoEnvironment,
         [Parameter(ParameterSetName = 'Cloud')]
-        [string]$Host_,
+        [string]$WorkerID,
         [Parameter(ParameterSetName = 'Cloud')]
         [string[]]$Attach,
         [Parameter(ParameterSetName = 'Cloud')]
@@ -136,7 +136,7 @@ function Invoke-WarpAgent {
     if ($Open)           { $a.Add('--open') }
     if ($Team)           { $a.Add('--team') }
     if ($NoEnvironment)  { $a.Add('--no-environment') }
-    if ($Host_)          { $a.Add('--host'); $a.Add($Host_) }
+    if ($WorkerID)       { $a.Add('--host'); $a.Add($WorkerID) }
     if ($ComputerUse)    { $a.Add('--computer-use') }
     if ($NoComputerUse)  { $a.Add('--no-computer-use') }
     foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
