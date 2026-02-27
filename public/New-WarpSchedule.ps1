@@ -30,8 +30,8 @@ function New-WarpSchedule {
     .PARAMETER ConfigFile
     Optional. Path to a YAML or JSON configuration file.
 
-    .PARAMETER Host_
-    Optional. Where the job should be hosted.
+    .PARAMETER WorkerID
+    Optional. Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
 
     .PARAMETER Team
     Create at the team level.
@@ -41,6 +41,9 @@ function New-WarpSchedule {
 
     .EXAMPLE
     New-WarpSchedule -Name "daily-review" -Cron "0 9 * * *" -Prompt "Review open PRs" -Environment "env-id"
+
+	.NOTES
+	Use the ```Test-CronTabSchedule``` function in module PSDates to validate your cron expression before creating a schedule.
     #>
     [CmdletBinding()]
     param(
@@ -58,7 +61,7 @@ function New-WarpSchedule {
         [string]$Environment,
         [string[]]$Mcp,
         [string]$ConfigFile,
-        [string]$Host_,
+        [string]$WorkerID,
         [switch]$Team,
         [switch]$Personal
     )
@@ -70,7 +73,7 @@ function New-WarpSchedule {
     if ($Model)       { $a.Add('--model');   $a.Add($Model) }
     if ($Environment) { $a.Add('-e');        $a.Add($Environment) }
     if ($ConfigFile)  { $a.Add('-f');        $a.Add($ConfigFile) }
-    if ($Host_)       { $a.Add('--host');    $a.Add($Host_) }
+    if ($WorkerID)    { $a.Add('--host');    $a.Add($WorkerID) }
     if ($Team)        { $a.Add('--team') }
     if ($Personal)    { $a.Add('--personal') }
     foreach ($m in $Mcp) { $a.Add('--mcp'); $a.Add($m) }
