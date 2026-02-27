@@ -63,6 +63,9 @@ function Invoke-WarpAgent {
     .PARAMETER NoComputerUse
     Cloud only. Disable computer use capabilities.
 
+    .PARAMETER OneShot
+    Run without updating conversation context. Does not stash results in LastAgentResult or LastConversationId, and skips auto-continue.
+
     .EXAMPLE
     Invoke-WarpAgent -Prompt "Build a REST API"
 
@@ -107,16 +110,18 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$ComputerUse,
         [Parameter(ParameterSetName = 'Cloud')]
-        [switch]$NoComputerUse
+        [switch]$NoComputerUse,
+
+        [switch]$OneShot
     )
 
     # Auto-continue: if no explicit Conversation, try the stashed conversation ID
-    if (-not $Conversation -and $script:LastConversationId) {
+    if (-not $OneShot -and -not $Conversation -and $script:LastConversationId) {
         Write-Verbose "Auto-continuing conversation: $script:LastConversationId"
         $Conversation = $script:LastConversationId
     }
 
-    $sub = if ($Cloud) { 'run-cloud' } else { 'run' }
+    $sub = if ($Cloud.IsPresent) { 'run-cloud' } else { 'run' }
     $a = [System.Collections.Generic.List[string]]@('agent', $sub, '--prompt', $Prompt)
 
     if ($Name)         { $a.Add('-n');            $a.Add($Name) }
@@ -133,25 +138,27 @@ function Invoke-WarpAgent {
     if ($Profile) { $a.Add('--profile'); $a.Add($Profile) }
 
     # Cloud params
-    if ($Open)           { $a.Add('--open') }
-    if ($Team)           { $a.Add('--team') }
-    if ($NoEnvironment)  { $a.Add('--no-environment') }
+    if ($Open.IsPresent)           { $a.Add('--open') }
+    if ($Team.IsPresent) { $a.Add('--team') }
+    if ($NoEnvironment.IsPresent)  { $a.Add('--no-environment') }
     if ($WorkerID)       { $a.Add('--host'); $a.Add($WorkerID) }
-    if ($ComputerUse)    { $a.Add('--computer-use') }
-    if ($NoComputerUse)  { $a.Add('--no-computer-use') }
+    if ($ComputerUse.IsPresent)    { $a.Add('--computer-use') }
+    if ($NoComputerUse.IsPresent)  { $a.Add('--no-computer-use') }
     foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
 
     $result = Invoke-WarpCli -Arguments $a
     if ($result) {
-        $script:LastAgentResult = $result
-
         # Parse NDJSON events and extract key fields
         $events = $result -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
             try { $_ | ConvertFrom-Json } catch {}
         }
 
         $convId = ($events | Where-Object type -eq 'system' | Select-Object -First 1).conversation_id
-        if ($convId) { $script:LastConversationId = $convId }
+
+        if (-not $OneShot.IsPresent) {
+            $script:LastAgentResult = $result
+            if ($convId) { $script:LastConversationId = $convId }
+        }
 
         $agentText = ($events | Where-Object type -eq 'agent').text -join "`n"
         $files = @($events | Where-Object type -eq 'tool_call' |

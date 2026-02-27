@@ -22,7 +22,7 @@ Runs a Warp Oz agent locally or in the cloud.
 ```
 Invoke-WarpAgent [-Prompt] <string> [-Name <string>] [-Model <string>] [-Environment <string>]
  [-Skill <string>] [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>]
- [-Share <string>] [-Profile <string>] [<CommonParameters>]
+ [-Share <string>] [-Profile <string>] [-OneShot] [<CommonParameters>]
 ```
 
 ### Cloud
@@ -31,7 +31,7 @@ Invoke-WarpAgent [-Prompt] <string> [-Name <string>] [-Model <string>] [-Environ
 Invoke-WarpAgent [-Prompt] <string> -Cloud [-Name <string>] [-Model <string>]
  [-Environment <string>] [-Skill <string>] [-Conversation <string>] [-Mcp <string[]>]
  [-ConfigFile <string>] [-Open] [-Team] [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>]
- [-ComputerUse] [-NoComputerUse] [<CommonParameters>]
+ [-ComputerUse] [-NoComputerUse] [-OneShot] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -441,6 +441,27 @@ Skill spec to use as the base prompt (e.g.
 ```yaml
 Type: System.String
 DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -OneShot
+
+Run without updating conversation context. Does not stash results in LastAgentResult or LastConversationId, and skips auto-continue.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
