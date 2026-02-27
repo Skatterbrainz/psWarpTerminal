@@ -30,7 +30,7 @@ Invoke-WarpAgent [-Prompt] <string> [-Name <string>] [-Model <string>] [-Environ
 ```
 Invoke-WarpAgent [-Prompt] <string> -Cloud [-Name <string>] [-Model <string>]
  [-Environment <string>] [-Skill <string>] [-Conversation <string>] [-Mcp <string[]>]
- [-ConfigFile <string>] [-Open] [-Team] [-NoEnvironment] [-Host_ <string>] [-Attach <string[]>]
+ [-ConfigFile <string>] [-Open] [-Team] [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>]
  [-ComputerUse] [-NoComputerUse] [<CommonParameters>]
 ```
 
@@ -210,10 +210,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Host_
+### -WorkerID
 
 Cloud only.
-Where the job should be hosted.
+Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
 
 ```yaml
 Type: System.String
