@@ -14,6 +14,10 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` CLI, giving you str
 
 This module exposes 28 public functions covering the full surface of the `warp-terminal` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
+## Important Note
+
+The ```warp-terminal``` CLI is still being developed, so features are not aligned with the Warp Terminal GUI. For example, it's not (yet) possible to create agents, agent profiles, skills, rules, interface with Warp Drive or check billing and usage status. I will try to keep this module updated as often as features change, but feel free to submit PR's for anything you feel would enhance or repair this module. Thank you!
+
 ## ✨ Features
 
 - 🤖 **Agent Operations** - Launch local or cloud agents, list available agents and profiles, with automatic conversation continuation
