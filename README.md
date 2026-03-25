@@ -1,6 +1,6 @@
 # psWarpTerminal
 
-PowerShell wrapper for the Warp Terminal (Oz) CLI
+PowerShell wrapper for the Warp Terminal (warp-terminal or Oz) CLI
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
@@ -8,15 +8,15 @@ PowerShell wrapper for the Warp Terminal (Oz) CLI
 ![Platform](https://img.shields.io/badge/platform-Linux-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-Idiomatic PowerShell functions that wrap the `warp-terminal` CLI, giving you structured objects, pipeline support, and tab-completion instead of raw text output.
+Idiomatic PowerShell functions that wrap the `warp-terminal` or `oz` CLI, giving you structured objects, pipeline support, and tab-completion instead of raw text output.
 
 ## 🎯 Overview
 
-This module exposes 28 public functions covering the full surface of the `warp-terminal` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 28 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## Important Note
 
-The ```warp-terminal``` CLI is still being developed, so features are not aligned with the Warp Terminal GUI. For example, it's not (yet) possible to create agents, agent profiles, skills, rules, interface with Warp Drive or check billing and usage status. I will try to keep this module updated as often as features change, but feel free to submit PR's for anything you feel would enhance or repair this module. Thank you!
+Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features are not aligned with the Warp Terminal GUI. For example, it's not (yet) possible to create agents, agent profiles, skills, rules, interface with Warp Drive or check billing and usage status. I will try to keep this module updated as often as features change, but feel free to submit PR's for anything you feel would enhance or repair this module. Thank you!
 
 ## ✨ Features
 
@@ -30,7 +30,7 @@ The ```warp-terminal``` CLI is still being developed, so features are not aligne
 
 ## Requirements
 
-- PowerShell 7.0 or higher
+- PowerShell 7.0 or higher (tested with 7.5 and 7.6)
 - `warp-terminal` CLI installed and in your `PATH`
 - A Warp account (authenticate via `Connect-Warp`)
 
@@ -112,7 +112,7 @@ Use `-Verbose` to see when auto-continuation is applied. You can always override
 
 ## 📖 Function Reference
 
-Complete list of exported cmdlets (including conversation context helpers):
+Refer to the [docs](./docs/) folder for current function references. Complete list of exported cmdlets (including conversation context helpers):
 
 ### Agent
 
@@ -190,3 +190,21 @@ Please open an [issue](https://github.com/ds0934/psWarpTerminal/issues) or submi
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Version History
+
+- 1.2.0 - 2026-03-25
+  - Added detection for either warp-terminal or oz and process requests accordingly
+  - Added -SkillsArguments and -SavedPrompt parameters to Invoke-WarpAgent
+    - -Prompt is no longer mandatory if -SavedPrompt is provided
+    - -SkillArguments accepts a string array
+- 1.1.0 - 2026-02-26
+  - Added model tab-completion
+  - Fixed handling of JSON response data
+  - Fixed issues with context caching for conversation tracking
+  - Added functions for conversation history
+  - Added New-WarpSchedule
+  - Renamed Host_ to WorkerID to match warp-terminal references
+  - Added -OneShot parameter to Invoke-WarpAgent to submit prompts without conversation baggage
+- 1.0.0 - 2026-02-20
+  - Initial release
