@@ -6,8 +6,11 @@ function Invoke-WarpCli {
         [switch]$RawOutput
     )
 
-    $cmd = Get-Command 'warp-terminal' -ErrorAction SilentlyContinue
-    if (-not $cmd) { throw 'warp-terminal not found in PATH.' }
+    $cmd = Get-Command 'oz' -ErrorAction SilentlyContinue
+    if (-not $cmd) {
+        $cmd = Get-Command 'warp-terminal' -ErrorAction SilentlyContinue
+    }
+    if (-not $cmd) { throw 'Neither oz nor warp-terminal found in PATH.' }
 
     $args_ = [System.Collections.Generic.List[string]]::new()
     $args_.AddRange($Arguments)
@@ -22,8 +25,8 @@ function Invoke-WarpCli {
         $args_.Add($env:WARP_API_KEY)
     }
 
-    Write-Verbose "warp-terminal $($args_ -join ' ')"
-    $raw = & warp-terminal @args_ 2>&1
+    Write-Verbose "$($cmd.Name) $($args_ -join ' ')"
+    $raw = & $cmd.Name @args_ 2>&1
 
     $exitCode = $LASTEXITCODE
     $stderr = ($raw | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) -join "`n"
@@ -31,7 +34,7 @@ function Invoke-WarpCli {
 
     if ($exitCode -ne 0) {
         $msg = if ($stderr) { $stderr } else { $stdout }
-        Write-Error "warp-terminal exited $exitCode`: $msg"
+        Write-Error "$($cmd.Name) exited $exitCode`: $msg"
         return
     }
 
