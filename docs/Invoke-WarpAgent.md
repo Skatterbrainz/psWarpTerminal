@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 03/25/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-WarpAgent
 ---
@@ -20,18 +20,20 @@ Runs a Warp Oz agent locally or in the cloud.
 ### Local (Default)
 
 ```
-Invoke-WarpAgent [-Prompt] <string> [-Name <string>] [-Model <string>] [-Environment <string>]
- [-Skill <string>] [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>]
- [-Share <string>] [-Profile <string>] [-OneShot] [<CommonParameters>]
+Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Environment <string>]
+ [-Skill <string>] [-SkillArguments <string[]>] [-SavedPrompt <string>] [-Conversation <string>]
+ [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>] [-Share <string>] [-Profile <string>]
+ [-OneShot] [<CommonParameters>]
 ```
 
 ### Cloud
 
 ```
-Invoke-WarpAgent [-Prompt] <string> -Cloud [-Name <string>] [-Model <string>]
- [-Environment <string>] [-Skill <string>] [-Conversation <string>] [-Mcp <string[]>]
- [-ConfigFile <string>] [-Open] [-Team] [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>]
- [-ComputerUse] [-NoComputerUse] [-OneShot] [<CommonParameters>]
+Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>]
+ [-Environment <string>] [-Skill <string>] [-SkillArguments <string[]>] [-SavedPrompt <string>]
+ [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team]
+ [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
+ [-OneShot] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -54,6 +56,14 @@ Invoke-WarpAgent -Prompt "Build a REST API"
 ### EXAMPLE 2
 
 Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
+
+### EXAMPLE 3
+
+Invoke-WarpAgent -Skill "myorg/backend:code-review" -SkillArguments "PR #42","main branch" -Prompt "focus on security"
+
+### EXAMPLE 4
+
+Invoke-WarpAgent -SavedPrompt "pr-security-review"
 
 ## PARAMETERS
 
@@ -389,8 +399,8 @@ HelpMessage: ''
 
 ### -Prompt
 
-Required.
-The prompt for the agent to carry out.
+Optional.
+The prompt for the agent to carry out. Either -Prompt or -SavedPrompt must be specified.
 
 ```yaml
 Type: System.String
@@ -400,7 +410,7 @@ Aliases: []
 ParameterSets:
 - Name: (All)
   Position: 0
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -432,6 +442,28 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -SavedPrompt
+
+Optional.
+Name of a saved prompt from Warp Drive to use instead of an inline prompt. Either -Prompt or -SavedPrompt must be specified.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -Skill
 
 Optional.
@@ -440,6 +472,28 @@ Skill spec to use as the base prompt (e.g.
 
 ```yaml
 Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SkillArguments
+
+Optional.
+One or more arguments to pass to the skill. Maps to $1, $2, ... $N and $ARGUMENTS in the skill template.
+
+```yaml
+Type: System.String[]
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
