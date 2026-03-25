@@ -24,6 +24,12 @@ function Invoke-WarpAgent {
     .PARAMETER Skill
     Optional. Skill spec to use as the base prompt (e.g. "repo:skill_name").
 
+    .PARAMETER SkillArguments
+    Optional. One or more arguments to pass to the skill. Maps to $1, $2, ... $N and $ARGUMENTS in the skill template.
+
+    .PARAMETER SavedPrompt
+    Optional. Name of a saved prompt from Warp Drive to use instead of an inline prompt.
+
     .PARAMETER Conversation
     Optional. Continue an existing conversation by ID.
 
@@ -71,10 +77,16 @@ function Invoke-WarpAgent {
 
     .EXAMPLE
     Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
+
+    .EXAMPLE
+    Invoke-WarpAgent -Skill "myorg/backend:code-review" -SkillArguments "PR #42","main branch" -Prompt "focus on security"
+
+    .EXAMPLE
+    Invoke-WarpAgent -SavedPrompt "pr-security-review"
     #>
     [CmdletBinding(DefaultParameterSetName = 'Local')]
     param(
-        [Parameter(Mandatory, Position = 0)]
+        [Parameter(Position = 0)]
         [string]$Prompt,
 
         [Parameter(ParameterSetName = 'Cloud', Mandatory)]
@@ -84,6 +96,8 @@ function Invoke-WarpAgent {
         [string]$Model,
         [string]$Environment,
         [string]$Skill,
+        [string[]]$SkillArguments,
+        [string]$SavedPrompt,
         [string]$Conversation,
         [string[]]$Mcp,
         [string]$ConfigFile,
@@ -115,6 +129,11 @@ function Invoke-WarpAgent {
         [switch]$OneShot
     )
 
+    # Validate: at least one of Prompt or SavedPrompt must be provided
+    if (-not $Prompt -and -not $SavedPrompt) {
+        throw 'You must specify either -Prompt or -SavedPrompt.'
+    }
+
     # Auto-continue: if no explicit Conversation, try the stashed conversation ID
     if (-not $OneShot -and -not $Conversation -and $script:LastConversationId) {
         Write-Verbose "Auto-continuing conversation: $script:LastConversationId"
@@ -122,12 +141,15 @@ function Invoke-WarpAgent {
     }
 
     $sub = if ($Cloud.IsPresent) { 'run-cloud' } else { 'run' }
-    $a = [System.Collections.Generic.List[string]]@('agent', $sub, '--prompt', $Prompt)
+    $a = [System.Collections.Generic.List[string]]@('agent', $sub)
+    if ($Prompt)      { $a.Add('--prompt'); $a.Add($Prompt) }
+    if ($SavedPrompt) { $a.Add('--saved-prompt'); $a.Add($SavedPrompt) }
 
     if ($Name)         { $a.Add('-n');            $a.Add($Name) }
     if ($Model)        { $a.Add('--model');       $a.Add($Model) }
     if ($Environment)  { $a.Add('-e');            $a.Add($Environment) }
     if ($Skill)        { $a.Add('--skill');       $a.Add($Skill) }
+    foreach ($sa in $SkillArguments) { $a.Add('--arg'); $a.Add($sa) }
     if ($Conversation) { $a.Add('--conversation');$a.Add($Conversation) }
     if ($ConfigFile)   { $a.Add('-f');            $a.Add($ConfigFile) }
     foreach ($m in $Mcp) { $a.Add('--mcp'); $a.Add($m) }
