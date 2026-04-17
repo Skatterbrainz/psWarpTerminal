@@ -22,13 +22,13 @@ function Invoke-WarpAgent {
     Optional. Cloud environment ID to use.
 
     .PARAMETER Skill
-    Optional. Skill spec to use as the base prompt (e.g. "repo:skill_name").
-
-    .PARAMETER SkillArguments
-    Optional. One or more arguments to pass to the skill. Maps to $1, $2, ... $N and $ARGUMENTS in the skill template.
+    Optional. Skill spec to use as the base prompt (e.g. "repo:skill_name"). When combined with -Prompt, the skill provides the base context and the prompt is the task.
 
     .PARAMETER SavedPrompt
     Optional. Name of a saved prompt from Warp Drive to use instead of an inline prompt.
+
+    .PARAMETER TaskId
+    Optional. Continue or resume an existing agent task by its ID.
 
     .PARAMETER Conversation
     Optional. Continue an existing conversation by ID.
@@ -53,6 +53,9 @@ function Invoke-WarpAgent {
 
     .PARAMETER Team
     Cloud only. Make the task visible to all team members.
+
+    .PARAMETER Personal
+    Cloud only. Create the task as private to your account.
 
     .PARAMETER NoEnvironment
     Cloud only. Do not run in an environment.
@@ -79,10 +82,13 @@ function Invoke-WarpAgent {
     Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
 
     .EXAMPLE
-    Invoke-WarpAgent -Skill "myorg/backend:code-review" -SkillArguments "PR #42","main branch" -Prompt "focus on security"
+    Invoke-WarpAgent -Skill "myorg/backend:code-review" -Prompt "focus on PR #42 on main branch"
 
     .EXAMPLE
     Invoke-WarpAgent -SavedPrompt "pr-security-review"
+
+    .EXAMPLE
+    Invoke-WarpAgent -Cloud -TaskId "task-abc123" -Prompt "now add tests"
     #>
     [CmdletBinding(DefaultParameterSetName = 'Local')]
     param(
@@ -96,8 +102,8 @@ function Invoke-WarpAgent {
         [string]$Model,
         [string]$Environment,
         [string]$Skill,
-        [string[]]$SkillArguments,
         [string]$SavedPrompt,
+        [string]$TaskId,
         [string]$Conversation,
         [string[]]$Mcp,
         [string]$ConfigFile,
@@ -116,6 +122,8 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$Team,
         [Parameter(ParameterSetName = 'Cloud')]
+        [switch]$Personal,
+        [Parameter(ParameterSetName = 'Cloud')]
         [switch]$NoEnvironment,
         [Parameter(ParameterSetName = 'Cloud')]
         [string]$WorkerID,
@@ -129,9 +137,9 @@ function Invoke-WarpAgent {
         [switch]$OneShot
     )
 
-    # Validate: at least one of Prompt or SavedPrompt must be provided
-    if (-not $Prompt -and -not $SavedPrompt) {
-        throw 'You must specify either -Prompt or -SavedPrompt.'
+    # Validate: at least one of Prompt, SavedPrompt, TaskId, or Skill must be provided
+    if (-not $Prompt -and -not $SavedPrompt -and -not $TaskId -and -not $Skill) {
+        throw 'You must specify one of: -Prompt, -SavedPrompt, -TaskId, or -Skill.'
     }
 
     # Auto-continue: if no explicit Conversation, try the stashed conversation ID
@@ -144,12 +152,12 @@ function Invoke-WarpAgent {
     $a = [System.Collections.Generic.List[string]]@('agent', $sub)
     if ($Prompt)      { $a.Add('--prompt'); $a.Add($Prompt) }
     if ($SavedPrompt) { $a.Add('--saved-prompt'); $a.Add($SavedPrompt) }
+    if ($TaskId)      { $a.Add('--task-id'); $a.Add($TaskId) }
 
     if ($Name)         { $a.Add('-n');            $a.Add($Name) }
     if ($Model)        { $a.Add('--model');       $a.Add($Model) }
     if ($Environment)  { $a.Add('-e');            $a.Add($Environment) }
     if ($Skill)        { $a.Add('--skill');       $a.Add($Skill) }
-    foreach ($sa in $SkillArguments) { $a.Add('--arg'); $a.Add($sa) }
     if ($Conversation) { $a.Add('--conversation');$a.Add($Conversation) }
     if ($ConfigFile)   { $a.Add('-f');            $a.Add($ConfigFile) }
     foreach ($m in $Mcp) { $a.Add('--mcp'); $a.Add($m) }
@@ -161,7 +169,8 @@ function Invoke-WarpAgent {
 
     # Cloud params
     if ($Open.IsPresent)           { $a.Add('--open') }
-    if ($Team.IsPresent) { $a.Add('--team') }
+    if ($Team.IsPresent)           { $a.Add('--team') }
+    if ($Personal.IsPresent)       { $a.Add('--personal') }
     if ($NoEnvironment.IsPresent)  { $a.Add('--no-environment') }
     if ($WorkerID)       { $a.Add('--host'); $a.Add($WorkerID) }
     if ($ComputerUse.IsPresent)    { $a.Add('--computer-use') }
