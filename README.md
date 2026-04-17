@@ -12,7 +12,7 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` or `oz` CLI, giving
 
 ## 🎯 Overview
 
-This module exposes 28 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 31 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## Important Note
 
@@ -22,11 +22,12 @@ Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features
 
 - 🤖 **Agent Operations** - Launch local or cloud agents, list available agents and profiles, with automatic conversation continuation
 - 📋 **Run Management** - List and inspect ambient agent task runs
+- 📦 **Artifact Management** - Fetch metadata for and download files produced by cloud agent runs
 - 🌐 **Environment Management** - Create, update, delete, and inspect cloud environments and base images
 - 🔐 **Secret Management** - Create, update, delete, and list secrets in Warp's secure storage
 - ⏰ **Schedule Management** - Create, update, pause, resume, and delete scheduled (cron) agents
 - 🔌 **Integrations** - List, create, and update integrations
-- 🧩 **Utility** - List available models, MCP servers, and manage authentication
+- 🧩 **Utility** - List available models, MCP servers, identify the current user, and manage authentication
 
 ## Requirements
 
@@ -130,6 +131,13 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 |---|---|
 | `Get-WarpRun` | List runs or get a specific run by `-TaskId` |
 
+### Artifact
+
+| Function | Description |
+|---|---|
+| `Get-WarpArtifact` | Get metadata for an artifact by `-Uid` |
+| `Save-WarpArtifact` | Download an artifact file to disk (supports `-WhatIf`) |
+
 ### Environment
 
 | Function | Description |
@@ -174,6 +182,7 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 |---|---|
 | `Connect-Warp` | Log in to Warp |
 | `Disconnect-Warp` | Log out (supports `-WhatIf`) |
+| `Get-WarpWhoAmI` | Print information about the logged-in user |
 | `Get-WarpModel` | List available models |
 | `Get-WarpMcp` | List MCP servers |
 
@@ -193,6 +202,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Version History
 
+- 1.3.0 - 2026-04-17
+  - Added `Get-WarpArtifact` and `Save-WarpArtifact` wrappers for the new `oz artifact` subcommand
+  - Added `Get-WarpWhoAmI` wrapper for `oz whoami`
+  - Added `-TaskId` parameter to `Invoke-WarpAgent` to continue/resume an existing task
+  - Added `-Personal` switch to `Invoke-WarpAgent` (cloud) for symmetry with `-Team`
+  - **Breaking:** Removed `-SkillArguments` from `Invoke-WarpAgent`. The underlying `--arg` flag is no longer valid on `oz agent run`; pass skill arguments via `-Prompt` instead (per the CLI's `--skill` help)
 - 1.2.0 - 2026-03-25
   - Added detection for either warp-terminal or oz and process requests accordingly
   - Added -SkillsArguments and -SavedPrompt parameters to Invoke-WarpAgent

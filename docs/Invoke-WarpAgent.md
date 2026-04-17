@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 03/25/2026
+ms.date: 04/17/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-WarpAgent
 ---
@@ -21,7 +21,7 @@ Runs a Warp Oz agent locally or in the cloud.
 
 ```
 Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Environment <string>]
- [-Skill <string>] [-SkillArguments <string[]>] [-SavedPrompt <string>] [-Conversation <string>]
+ [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>] [-Conversation <string>]
  [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>] [-Share <string>] [-Profile <string>]
  [-OneShot] [<CommonParameters>]
 ```
@@ -30,8 +30,8 @@ Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Envir
 
 ```
 Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>]
- [-Environment <string>] [-Skill <string>] [-SkillArguments <string[]>] [-SavedPrompt <string>]
- [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team]
+ [-Environment <string>] [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>]
+ [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team] [-Personal]
  [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
  [-OneShot] [<CommonParameters>]
 ```
@@ -59,11 +59,15 @@ Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
 
 ### EXAMPLE 3
 
-Invoke-WarpAgent -Skill "myorg/backend:code-review" -SkillArguments "PR #42","main branch" -Prompt "focus on security"
+Invoke-WarpAgent -Skill "myorg/backend:code-review" -Prompt "focus on PR #42 on main branch"
 
 ### EXAMPLE 4
 
 Invoke-WarpAgent -SavedPrompt "pr-security-review"
+
+### EXAMPLE 5
+
+Invoke-WarpAgent -Cloud -TaskId "task-abc123" -Prompt "now add tests"
 
 ## PARAMETERS
 
@@ -487,18 +491,40 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -SkillArguments
+### -TaskId
 
 Optional.
-One or more arguments to pass to the skill. Maps to $1, $2, ... $N and $ARGUMENTS in the skill template.
+Continue or resume an existing agent task by its ID.
 
 ```yaml
-Type: System.String[]
+Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Personal
+
+Cloud only.
+Create the task as private to your account.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Cloud
   Position: Named
   IsRequired: false
   ValueFromPipeline: false
