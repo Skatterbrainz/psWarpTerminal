@@ -72,6 +72,15 @@ function Invoke-WarpAgent {
     .PARAMETER NoComputerUse
     Cloud only. Disable computer use capabilities.
 
+    .PARAMETER NoSnapshot
+    Disable the end-of-run workspace snapshot upload.
+
+    .PARAMETER SnapshotUploadTimeout
+    Maximum time to wait for the end-of-run snapshot upload (e.g. "5m", "300s").
+
+    .PARAMETER SnapshotScriptTimeout
+    Maximum time to wait for the declarations script before uploading the snapshot (e.g. "2m").
+
     .PARAMETER OneShot
     Run without updating conversation context. Does not stash results in LastAgentResult or LastConversationId, and skips auto-continue.
 
@@ -134,6 +143,10 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$NoComputerUse,
 
+        [switch]$NoSnapshot,
+        [string]$SnapshotUploadTimeout,
+        [string]$SnapshotScriptTimeout,
+
         [switch]$OneShot
     )
 
@@ -176,6 +189,11 @@ function Invoke-WarpAgent {
     if ($ComputerUse.IsPresent)    { $a.Add('--computer-use') }
     if ($NoComputerUse.IsPresent)  { $a.Add('--no-computer-use') }
     foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
+
+    # Snapshot params (local + cloud)
+    if ($NoSnapshot.IsPresent)       { $a.Add('--no-snapshot') }
+    if ($SnapshotUploadTimeout)      { $a.Add('--snapshot-upload-timeout'); $a.Add($SnapshotUploadTimeout) }
+    if ($SnapshotScriptTimeout)      { $a.Add('--snapshot-script-timeout'); $a.Add($SnapshotScriptTimeout) }
 
     $result = Invoke-WarpCli -Arguments $a
     if ($result) {
