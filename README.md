@@ -12,7 +12,7 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` or `oz` CLI, giving
 
 ## 🎯 Overview
 
-This module exposes 31 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 32 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## Important Note
 
@@ -26,7 +26,8 @@ Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features
 - 🌐 **Environment Management** - Create, update, delete, and inspect cloud environments and base images
 - 🔐 **Secret Management** - Create, update, delete, and list secrets in Warp's secure storage
 - ⏰ **Schedule Management** - Create, update, pause, resume, and delete scheduled (cron) agents
-- 🔌 **Integrations** - List, create, and update integrations
+- 🔌 **Integrations** - List, create, and update integrations (Linear, Slack) with full parameter support
+- ⚙️ **Settings** - Read and parse the local Warp `settings.toml` into a PowerShell object
 - 🧩 **Utility** - List available models, MCP servers, identify the current user, and manage authentication
 
 ## Requirements
@@ -85,9 +86,15 @@ Get-WarpEnvironment | Where-Object name -eq "old-env" | Remove-WarpEnvironment
 # Create a scheduled agent
 New-WarpSchedule -Name "daily-review" -Cron "0 9 * * *" -Prompt "Review open PRs" -Environment "my-env-id"
 
+# Schedule a skill instead of a prompt
+New-WarpSchedule -Name "nightly-deps" -Cron "0 2 * * *" -Skill "myorg/infra:dep-update"
+
 # Pause / resume a schedule
 Suspend-WarpSchedule -Id "sched-id"
 Resume-WarpSchedule -Id "sched-id"
+
+# Read local Warp settings
+(Get-WarpSettings).appearance.themes.theme
 ```
 
 ### 🔄 Conversation Continuation
@@ -119,8 +126,8 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 
 | Function | Description |
 |---|---|
-| `Invoke-WarpAgent` | Run an agent locally (default) or in the cloud (`-Cloud`). Auto-continues conversations |
-| `Get-WarpAgent` | List available agents |
+| `Invoke-WarpAgent` | Run an agent locally (default) or in the cloud (`-Cloud`). Auto-continues conversations. Supports snapshot control |
+| `Get-WarpAgent` | List available agents, optionally filtered by `-Repo` |
 | `Get-WarpAgentProfile` | List agent profiles |
 | `Get-WarpAgentContext` | Inspect the stored conversation context from the last agent run |
 | `Clear-WarpAgentContext` | Reset the conversation context to start a fresh session |
@@ -144,7 +151,7 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 |---|---|
 | `Get-WarpEnvironment` | List environments or get one by `-Id` |
 | `New-WarpEnvironment` | Create a cloud environment |
-| `Set-WarpEnvironment` | Update an existing environment |
+| `Set-WarpEnvironment` | Update an environment's name, image, repos, setup commands, etc. |
 | `Remove-WarpEnvironment` | Delete an environment (supports `-WhatIf`) |
 | `Get-WarpEnvironmentImage` | List available base images |
 
@@ -161,9 +168,9 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 
 | Function | Description |
 |---|---|
-| `New-WarpSchedule` | Create a scheduled agent with a cron expression |
+| `New-WarpSchedule` | Create a scheduled agent with `-Prompt`, `-Skill`, or both |
 | `Get-WarpSchedule` | List schedules or get one by `-Id` |
-| `Set-WarpSchedule` | Update a schedule |
+| `Set-WarpSchedule` | Update a schedule's name, cron, prompt, skill, environment, MCP servers, etc. |
 | `Remove-WarpSchedule` | Delete a schedule (supports `-WhatIf`) |
 | `Suspend-WarpSchedule` | Pause a scheduled agent |
 | `Resume-WarpSchedule` | Unpause a scheduled agent |
@@ -173,10 +180,16 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 | Function | Description |
 |---|---|
 | `Get-WarpIntegration` | List integrations |
-| `New-WarpIntegration` | Create an integration |
-| `Set-WarpIntegration` | Update an integration |
+| `New-WarpIntegration` | Create an integration for a provider (`linear`, `slack`) with environment, MCP, and prompt support |
+| `Set-WarpIntegration` | Update an integration's prompt, environment, MCP servers, model, or worker host |
 
-### Authentication
+### Settings
+
+| Function | Description |
+|---|---|
+| `Get-WarpSettings` | Read and parse the local `settings.toml` into a `PSCustomObject`. Auto-detects path on Linux, macOS, and Windows |
+
+### Authentication & Utility
 
 | Function | Description |
 |---|---|
@@ -202,6 +215,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Version History
 
+- 1.4.0 - 2026-05-05
+  - Added `Get-WarpSettings` to read and parse the local Warp `settings.toml` into a structured object (cross-platform path detection)
+  - Added private `ConvertFrom-Toml` helper for TOML parsing
+  - Added `-NoSnapshot`, `-SnapshotUploadTimeout`, and `-SnapshotScriptTimeout` parameters to `Invoke-WarpAgent` (local and cloud)
+  - Added `-Repo` parameter to `Get-WarpAgent` to list skills from a specific GitHub repository
+  - `New-WarpSchedule` now supports `-Skill` as an alternative to `-Prompt` (or both together), plus `-NoEnvironment`
+  - **Upgraded `Set-WarpEnvironment`** from pass-through to explicit parameters: `-Name`, `-Description`, `-RemoveDescription`, `-DockerImage`, `-Repo`, `-RemoveRepo`, `-SetupCommand`, `-RemoveSetupCommand`, `-Force`
+  - **Upgraded `Set-WarpSchedule`** from pass-through to explicit parameters: `-Name`, `-Cron`, `-Prompt`, `-Skill`, `-RemoveSkill`, `-Model`, `-Environment`, `-RemoveEnvironment`, `-Mcp`, `-RemoveMcp`, `-ConfigFile`, `-WorkerID`
+  - **Upgraded `New-WarpIntegration`** from pass-through to explicit parameters: `-Provider` (linear/slack), `-Prompt`, `-Model`, `-Environment`, `-NoEnvironment`, `-Mcp`, `-ConfigFile`, `-WorkerID`
+  - **Upgraded `Set-WarpIntegration`** from pass-through to explicit parameters: `-Provider`, `-Prompt`, `-Model`, `-Environment`, `-RemoveEnvironment`, `-Mcp`, `-RemoveMcp`, `-ConfigFile`, `-WorkerID`
 - 1.3.0 - 2026-04-17
   - Added `Get-WarpArtifact` and `Save-WarpArtifact` wrappers for the new `oz artifact` subcommand
   - Added `Get-WarpWhoAmI` wrapper for `oz whoami`

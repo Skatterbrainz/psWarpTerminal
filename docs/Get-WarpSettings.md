@@ -6,21 +6,21 @@ Locale: en-US
 Module Name: psWarpTerminal
 ms.date: 05/05/2026
 PlatyPS schema version: 2024-05-01
-title: Get-WarpAgent
+title: Get-WarpSettings
 ---
 
-# Get-WarpAgent
+# Get-WarpSettings
 
 ## SYNOPSIS
 
-Retrieves a list of Warp agents.
+Returns Warp Terminal settings as a PowerShell object.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```
-Get-WarpAgent [[-Repo] <string>] [<CommonParameters>]
+Get-WarpSettings [[-Path] <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -30,24 +30,28 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available agents.
-Optionally filters by a specific GitHub repository.
+Reads and parses the Warp Terminal settings.toml file, returning it as a PSCustomObject.
+Automatically detects the settings file location based on the operating system.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpAgent
+Get-WarpSettings
 
 ### EXAMPLE 2
 
-Get-WarpAgent -Repo "myorg/backend"
+Get-WarpSettings -Path ~/.config/warp-terminal/settings.toml
+
+### EXAMPLE 3
+
+(Get-WarpSettings).appearance.themes.theme
 
 ## PARAMETERS
 
-### -Repo
+### -Path
 
-Optional. List skills from a specific GitHub repository (e.g. "owner/repo").
+Optional. Path to the settings.toml file. If not specified, the default platform-specific location is used.
 
 ```yaml
 Type: System.String
@@ -77,9 +81,17 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
+### System.Management.Automation.PSCustomObject
+
+A nested PSCustomObject representing the parsed TOML settings.
+
 ## NOTES
+
+Default settings file locations by platform:
+- Linux: ~/.config/warp-terminal/settings.toml
+- macOS: ~/Library/Preferences/dev.warp.Warp-Stable/settings.toml or ~/.warp/settings.toml
+- Windows: $env:LOCALAPPDATA\warp-terminal\settings.toml
 
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
-

@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 05/05/2026
 PlatyPS schema version: 2024-05-01
 title: New-WarpSchedule
 ---
@@ -17,12 +17,20 @@ Creates a new Warp scheduled agent.
 
 ## SYNTAX
 
-### __AllParameterSets
+### ByPrompt (Default)
 
 ```
-New-WarpSchedule [-Name] <string> [-Cron] <string> [-Prompt] <string> [[-Skill] <string>]
- [[-Model] <string>] [[-Environment] <string>] [[-Mcp] <string[]>] [[-ConfigFile] <string>]
- [[-WorkerID] <string>] [-Team] [-Personal] [<CommonParameters>]
+New-WarpSchedule [-Name] <string> [-Cron] <string> [-Prompt] <string> [-Skill <string>]
+ [-Model <string>] [-Environment <string>] [-NoEnvironment] [-Mcp <string[]>]
+ [-ConfigFile <string>] [-WorkerID <string>] [-Team] [-Personal] [<CommonParameters>]
+```
+
+### BySkill
+
+```
+New-WarpSchedule [-Name] <string> [-Cron] <string> [-Skill] <string> [-Prompt <string>]
+ [-Model <string>] [-Environment <string>] [-NoEnvironment] [-Mcp <string[]>]
+ [-ConfigFile <string>] [-WorkerID <string>] [-Team] [-Personal] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -33,12 +41,21 @@ This cmdlet has the following aliases,
 ## DESCRIPTION
 
 This function invokes the Warp CLI to create a scheduled agent that runs periodically according to a cron expression.
+Either -Prompt or -Skill (or both) must be provided.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 New-WarpSchedule -Name "daily-review" -Cron "0 9 * * *" -Prompt "Review open PRs" -Environment "env-id"
+
+### EXAMPLE 2
+
+New-WarpSchedule -Name "nightly-deps" -Cron "0 2 * * *" -Skill "myorg/infra:dep-update"
+
+### EXAMPLE 3
+
+New-WarpSchedule -Name "weekly-audit" -Cron "0 9 * * 1" -Skill "myorg/backend:security-review" -Prompt "Focus on auth modules"
 
 ## PARAMETERS
 
@@ -218,10 +235,31 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -NoEnvironment
+
+Do not run the agent in an environment.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -Prompt
 
-Required.
-Prompt for what the scheduled agent should do.
+Prompt for what the scheduled agent should do. Required unless -Skill is specified.
+When used with -Skill, the skill provides the base context and the prompt is the task.
 
 ```yaml
 Type: System.String
@@ -229,9 +267,15 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 2
+- Name: ByPrompt
+  Position: Named
   IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+- Name: BySkill
+  Position: Named
+  IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -242,9 +286,8 @@ HelpMessage: ''
 
 ### -Skill
 
-Optional.
-Skill spec to use (e.g.
-"repo:skill_name").
+Skill spec to automate on a schedule (e.g. "repo:skill_name" or "org/repo:skill_name").
+Required unless -Prompt is specified.
 
 ```yaml
 Type: System.String
@@ -252,8 +295,14 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
-  Position: 3
+- Name: BySkill
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+- Name: ByPrompt
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false

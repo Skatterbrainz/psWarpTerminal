@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 05/05/2026
 PlatyPS schema version: 2024-05-01
 title: New-WarpIntegration
 ---
@@ -20,7 +20,9 @@ Creates a new Warp integration.
 ### __AllParameterSets
 
 ```
-New-WarpIntegration [[-PassThru] <string[]>] [<CommonParameters>]
+New-WarpIntegration [-Provider] <string> [-Prompt <string>] [-Model <string>]
+ [-Environment <string>] [-NoEnvironment] [-Mcp <string[]>] [-ConfigFile <string>]
+ [-WorkerID <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -30,21 +32,128 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to create a new integration.
-Arguments are passed through to the CLI.
+This function invokes the Warp CLI to create a new integration for a supported provider.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-New-WarpIntegration
+New-WarpIntegration -Provider linear -Environment "env-id"
+
+### EXAMPLE 2
+
+New-WarpIntegration -Provider slack -Prompt "Respond helpfully to questions in #dev"
 
 ## PARAMETERS
 
-### -PassThru
+### -Provider
 
-Optional.
-Arguments forwarded to the Warp CLI create command.
+Required. The provider to integrate (linear or slack).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 0
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: ['linear', 'slack']
+HelpMessage: ''
+```
+
+### -Prompt
+
+Optional. Custom instructions for the integration.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Model
+
+Optional. Override the base model.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Environment
+
+Optional. Cloud environment ID to run in.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoEnvironment
+
+Do not run the agent in an environment.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Mcp
+
+Optional. One or more MCP server specs.
 
 ```yaml
 Type: System.String[]
@@ -53,11 +162,53 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
-  Position: 0
+  Position: Named
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ConfigFile
+
+Optional. Path to a YAML or JSON configuration file.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -WorkerID
+
+Optional. Worker host ID for self-hosted workers.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
 HelpMessage: ''
@@ -79,4 +230,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
-

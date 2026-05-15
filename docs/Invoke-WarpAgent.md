@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 04/17/2026
+ms.date: 05/05/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-WarpAgent
 ---
@@ -23,6 +23,7 @@ Runs a Warp Oz agent locally or in the cloud.
 Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Environment <string>]
  [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>] [-Conversation <string>]
  [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>] [-Share <string>] [-Profile <string>]
+ [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
  [-OneShot] [<CommonParameters>]
 ```
 
@@ -33,6 +34,7 @@ Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>]
  [-Environment <string>] [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>]
  [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team] [-Personal]
  [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
+ [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
  [-OneShot] [<CommonParameters>]
 ```
 
@@ -525,6 +527,69 @@ SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: Cloud
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NoSnapshot
+
+Disable the end-of-run workspace snapshot upload.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SnapshotUploadTimeout
+
+Maximum time to wait for the end-of-run snapshot upload (e.g. "5m", "300s").
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SnapshotScriptTimeout
+
+Maximum time to wait for the declarations script before uploading the snapshot (e.g. "2m").
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
   Position: Named
   IsRequired: false
   ValueFromPipeline: false

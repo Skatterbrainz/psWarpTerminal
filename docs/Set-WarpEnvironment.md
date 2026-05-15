@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 05/05/2026
 PlatyPS schema version: 2024-05-01
 title: Set-WarpEnvironment
 ---
@@ -20,7 +20,9 @@ Updates an existing Warp cloud environment.
 ### __AllParameterSets
 
 ```
-Set-WarpEnvironment [-Id] <string> [-PassThru <string[]>] [<CommonParameters>]
+Set-WarpEnvironment [-Id] <string> [-Name <string>] [-Description <string>] [-RemoveDescription]
+ [-DockerImage <string>] [-Repo <string[]>] [-RemoveRepo <string[]>] [-SetupCommand <string[]>]
+ [-RemoveSetupCommand <string[]>] [-Force] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -30,22 +32,27 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to update a cloud environment.
-Additional arguments are passed through to the CLI.
+This function invokes the Warp CLI to update a cloud environment's configuration.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Set-WarpEnvironment -Id "env-abc123" --name "new-name"
+Set-WarpEnvironment -Id "env-abc123" -Name "new-name"
+
+### EXAMPLE 2
+
+Set-WarpEnvironment -Id "env-abc123" -Repo "org/new-repo" -RemoveRepo "org/old-repo"
+
+### EXAMPLE 3
+
+Get-WarpEnvironment -Id "env-abc123" | Set-WarpEnvironment -DockerImage "ubuntu:24.04" -Force
 
 ## PARAMETERS
 
 ### -Id
 
-Required.
-The ID of the environment to update.
-May be piped from another command.
+Required. The ID of the environment to update. May be piped from another command.
 
 ```yaml
 Type: System.String
@@ -64,10 +71,93 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -PassThru
+### -Name
 
-Optional.
-Additional arguments forwarded to the Warp CLI update command.
+Optional. Update the environment name.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Description
+
+Optional. Update the description (max 240 characters).
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RemoveDescription
+
+Remove the description from the environment.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -DockerImage
+
+Optional. Update the Docker image.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Repo
+
+Optional. One or more Git repos in "owner/repo" format to add.
 
 ```yaml
 Type: System.String[]
@@ -80,7 +170,91 @@ ParameterSets:
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RemoveRepo
+
+Optional. One or more Git repos in "owner/repo" format to remove.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SetupCommand
+
+Optional. One or more setup commands to add.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -RemoveSetupCommand
+
+Optional. One or more setup commands to remove.
+
+```yaml
+Type: System.String[]
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Force
+
+Force update without checking for integration usage.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
 HelpMessage: ''
@@ -97,7 +271,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
-{{ Fill in the Description }}
+The Id parameter accepts pipeline input by property name.
 
 ## OUTPUTS
 
@@ -106,4 +280,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## RELATED LINKS
 
 {{ Fill in the related links here }}
-
