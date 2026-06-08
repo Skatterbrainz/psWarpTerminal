@@ -31,9 +31,9 @@ Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Envir
 
 ```
 Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>]
- [-Environment <string>] [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>]
+ [-Environment <string>] [-Skill <string>] [-SavedPrompt <string>]
  [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team] [-Personal]
- [-NoEnvironment] [-WorkerID <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
+ [-NoEnvironment] [-WorkerID <string>] [-Agent <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
  [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
  [-OneShot] [<CommonParameters>]
 ```
@@ -69,7 +69,7 @@ Invoke-WarpAgent -SavedPrompt "pr-security-review"
 
 ### EXAMPLE 5
 
-Invoke-WarpAgent -Cloud -TaskId "task-abc123" -Prompt "now add tests"
+Invoke-WarpAgent -Cloud -Agent "ag_abc123" -Prompt "now add tests"
 
 ## PARAMETERS
 
@@ -495,7 +495,7 @@ HelpMessage: ''
 
 ### -TaskId
 
-Optional.
+Local only.
 Continue or resume an existing agent task by its ID.
 
 ```yaml
@@ -504,7 +504,29 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
+- Name: Local
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -Agent
+
+Cloud only.
+Execute this run as an existing reusable agent UID.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: Cloud
   Position: Named
   IsRequired: false
   ValueFromPipeline: false

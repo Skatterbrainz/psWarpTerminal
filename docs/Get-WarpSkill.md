@@ -4,68 +4,58 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 05/05/2026
+ms.date: 06/08/2026
 PlatyPS schema version: 2024-05-01
-title: Get-WarpAgent
+title: Get-WarpSkill
 ---
 
-# Get-WarpAgent
+# Get-WarpSkill
 
 ## SYNOPSIS
 
-Retrieves Warp reusable agents.
+Lists available Warp agent skills.
 
 ## SYNTAX
 
-### List
+### __AllParameterSets
 
 ```
-Get-WarpAgent [<CommonParameters>]
+Get-WarpSkill [[-Repo] <string>] [<CommonParameters>]
 ```
-
-### ById
-
-```
-Get-WarpAgent [-Id] <string> [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available reusable agents,
-or retrieve a single agent by ID.
+This function invokes the Warp CLI to list available skills discovered from
+your environments, or from a specific GitHub repository.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpAgent
+Get-WarpSkill
 
 ### EXAMPLE 2
 
-Get-WarpAgent -Id "ag_abc123"
+Get-WarpSkill -Repo "myorg/backend"
 
 ## PARAMETERS
 
-### -Id
+### -Repo
 
-Optional. The ID (UID) of a specific agent to retrieve.
+Optional. List skills from a specific GitHub repository.
+Format: "owner/repo" or "https://github.com/owner/repo".
 
 ```yaml
 Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
-Aliases: [Uid]
+Aliases: []
 ParameterSets:
-- Name: ById
+- Name: (All)
   Position: 0
-  IsRequired: true
+  IsRequired: false
   ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
+  ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
@@ -78,14 +68,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
 -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
 [about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

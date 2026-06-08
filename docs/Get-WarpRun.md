@@ -13,7 +13,7 @@ title: Get-WarpRun
 
 ## SYNOPSIS
 
-Retrieves a list of Warp runs.
+Retrieves Warp runs.
 
 ## SYNTAX
 
@@ -36,13 +36,18 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available runs or get a specific run by ID.
+This function invokes the Warp CLI to list runs with optional filters, or
+get a specific run by ID.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 Get-WarpRun
+
+### EXAMPLE 2
+
+Get-WarpRun -Limit 25 -State in-progress,succeeded -Source scheduled-agent -SortBy updated-at -SortOrder desc
 
 ## PARAMETERS
 
