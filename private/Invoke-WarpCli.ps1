@@ -8,9 +8,12 @@ function Invoke-WarpCli {
 
     $cmd = Get-Command 'oz' -ErrorAction SilentlyContinue
     if (-not $cmd) {
+        $cmd = Get-Command 'oz-preview' -ErrorAction SilentlyContinue
+    }
+    if (-not $cmd) {
         $cmd = Get-Command 'warp-terminal' -ErrorAction SilentlyContinue
     }
-    if (-not $cmd) { throw 'Neither oz nor warp-terminal found in PATH.' }
+    if (-not $cmd) { throw 'Neither oz, oz-preview, nor warp-terminal found in PATH.' }
 
     $args_ = [System.Collections.Generic.List[string]]::new()
     $args_.AddRange($Arguments)

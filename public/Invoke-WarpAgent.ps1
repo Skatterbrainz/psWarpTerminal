@@ -28,7 +28,7 @@ function Invoke-WarpAgent {
     Optional. Name of a saved prompt from Warp Drive to use instead of an inline prompt.
 
     .PARAMETER TaskId
-    Optional. Continue or resume an existing agent task by its ID.
+    Local only. Continue or resume an existing agent task by its ID.
 
     .PARAMETER Conversation
     Optional. Continue an existing conversation by ID.
@@ -62,6 +62,9 @@ function Invoke-WarpAgent {
 
     .PARAMETER WorkerID
     Cloud only. Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
+
+    .PARAMETER Agent
+    Cloud only. Execute this run as an existing reusable agent UID.
 
     .PARAMETER Attach
     Cloud only. One or more image file paths to attach (max 5).
@@ -112,6 +115,7 @@ function Invoke-WarpAgent {
         [string]$Environment,
         [string]$Skill,
         [string]$SavedPrompt,
+        [Parameter(ParameterSetName = 'Local')]
         [string]$TaskId,
         [string]$Conversation,
         [string[]]$Mcp,
@@ -137,6 +141,8 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [string]$WorkerID,
         [Parameter(ParameterSetName = 'Cloud')]
+        [string]$Agent,
+        [Parameter(ParameterSetName = 'Cloud')]
         [string[]]$Attach,
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$ComputerUse,
@@ -150,9 +156,13 @@ function Invoke-WarpAgent {
         [switch]$OneShot
     )
 
-    # Validate: at least one of Prompt, SavedPrompt, TaskId, or Skill must be provided
-    if (-not $Prompt -and -not $SavedPrompt -and -not $TaskId -and -not $Skill) {
-        throw 'You must specify one of: -Prompt, -SavedPrompt, -TaskId, or -Skill.'
+    # Validate required input by mode.
+    if ($Cloud.IsPresent) {
+        if (-not $Prompt -and -not $SavedPrompt -and -not $Skill) {
+            throw 'Cloud runs require one of: -Prompt, -SavedPrompt, or -Skill.'
+        }
+    } elseif (-not $Prompt -and -not $SavedPrompt -and -not $TaskId -and -not $Skill) {
+        throw 'Local runs require one of: -Prompt, -SavedPrompt, -TaskId, or -Skill.'
     }
 
     # Auto-continue: if no explicit Conversation, try the stashed conversation ID
@@ -185,6 +195,7 @@ function Invoke-WarpAgent {
     if ($Team.IsPresent)           { $a.Add('--team') }
     if ($Personal.IsPresent)       { $a.Add('--personal') }
     if ($NoEnvironment.IsPresent)  { $a.Add('--no-environment') }
+    if ($Agent)          { $a.Add('--agent'); $a.Add($Agent) }
     if ($WorkerID)       { $a.Add('--host'); $a.Add($WorkerID) }
     if ($ComputerUse.IsPresent)    { $a.Add('--computer-use') }
     if ($NoComputerUse.IsPresent)  { $a.Add('--no-computer-use') }

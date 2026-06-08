@@ -1,27 +1,33 @@
 function Get-WarpAgent {
     <#
     .SYNOPSIS
-    Retrieves a list of Warp agents.
+    Retrieves Warp reusable agents.
 
     .DESCRIPTION
-    This function invokes the Warp CLI to list all available agents.
-    Optionally filters by a specific GitHub repository.
+    This function invokes the Warp CLI to list all available reusable agents,
+    or retrieve a single agent by ID.
 
-    .PARAMETER Repo
-    Optional. List skills from a specific GitHub repository (e.g. "owner/repo").
+    .PARAMETER Id
+    Optional. The ID (UID) of a specific agent to retrieve.
 
     .EXAMPLE
     Get-WarpAgent
 
     .EXAMPLE
-    Get-WarpAgent -Repo "myorg/backend"
+    Get-WarpAgent -Id "ag_abc123"
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'List')]
     param(
-        [Parameter(Position = 0)]
-        [string]$Repo
+        [Parameter(ParameterSetName = 'ById', Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
+        [Alias('Uid')]
+        [string]$Id
     )
-    $a = [System.Collections.Generic.List[string]]@('agent', 'list')
-    if ($Repo) { $a.Add('--repo'); $a.Add($Repo) }
-    Invoke-WarpCli -Arguments $a
+
+    process {
+        if ($PSCmdlet.ParameterSetName -eq 'ById') {
+            Invoke-WarpCli -Arguments @('agent', 'get', $Id)
+        } else {
+            Invoke-WarpCli -Arguments @('agent', 'list')
+        }
+    }
 }
