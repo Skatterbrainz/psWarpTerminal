@@ -1,6 +1,8 @@
 # psWarpTerminal
 
 PowerShell wrapper for the Warp Terminal (warp-terminal or Oz) CLI
+- Updated: June 7, 2026
+
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
@@ -12,23 +14,25 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` or `oz` CLI, giving
 
 ## 🎯 Overview
 
-This module exposes 32 public functions covering the full surface of the `warp-terminal` or `oz` CLI. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 40 public functions covering the current `oz` CLI surface. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## Important Note
 
-Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features are not aligned with the Warp Terminal GUI. For example, it's not (yet) possible to create agents, agent profiles, skills, rules, interface with Warp Drive or check billing and usage status. I will try to keep this module updated as often as features change, but feel free to submit PR's for anything you feel would enhance or repair this module. Thank you!
+Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features may not always be aligned with the Warp GUI. I will try to keep this module updated as often as features change, but feel free to submit PR's for anything you feel would enhance or repair this module. Thank you!
 
 ## ✨ Features
 
 - 🤖 **Agent Operations** - Launch local or cloud agents, list available agents and profiles, with automatic conversation continuation
 - 📋 **Run Management** - List and inspect ambient agent task runs
+- 🧠 **Reusable Agent Management** - Create, update, inspect, list, and delete reusable agents
 - 📦 **Artifact Management** - Fetch metadata for and download files produced by cloud agent runs
 - 🌐 **Environment Management** - Create, update, delete, and inspect cloud environments and base images
 - 🔐 **Secret Management** - Create, update, delete, and list secrets in Warp's secure storage
+- 🔑 **API Key Management** - Create, list, and expire Oz API keys
 - ⏰ **Schedule Management** - Create, update, pause, resume, and delete scheduled (cron) agents
 - 🔌 **Integrations** - List, create, and update integrations (Linear, Slack) with full parameter support
 - ⚙️ **Settings** - Read and parse the local Warp `settings.toml` into a PowerShell object
-- 🧩 **Utility** - List available models, MCP servers, identify the current user, and manage authentication
+- 🧩 **Utility** - List models/MCP, inspect skills, identify current user, manage authentication, and issue federated identity tokens
 
 ## Requirements
 
@@ -127,7 +131,11 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 | Function | Description |
 |---|---|
 | `Invoke-WarpAgent` | Run an agent locally (default) or in the cloud (`-Cloud`). Auto-continues conversations. Supports snapshot control |
-| `Get-WarpAgent` | List available agents, optionally filtered by `-Repo` |
+| `Get-WarpAgent` | List reusable agents or get one by `-Id` |
+| `Get-WarpSkill` | List available skills, optionally filtered by `-Repo` |
+| `New-WarpAgent` | Create a reusable agent |
+| `Set-WarpAgent` | Update a reusable agent's metadata, skills, secrets, model, or default environment |
+| `Remove-WarpAgent` | Delete a reusable agent (supports `-WhatIf`) |
 | `Get-WarpAgentProfile` | List agent profiles |
 | `Get-WarpAgentContext` | Inspect the stored conversation context from the last agent run |
 | `Clear-WarpAgentContext` | Reset the conversation context to start a fresh session |
@@ -195,9 +203,13 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 |---|---|
 | `Connect-Warp` | Log in to Warp |
 | `Disconnect-Warp` | Log out (supports `-WhatIf`) |
+| `Get-WarpApiKey` | List active API keys |
+| `New-WarpApiKey` | Create an API key |
+| `Remove-WarpApiKey` | Expire an API key immediately (supports `-WhatIf`) |
 | `Get-WarpWhoAmI` | Print information about the logged-in user |
 | `Get-WarpModel` | List available models |
 | `Get-WarpMcp` | List MCP servers |
+| `Get-WarpFederatedToken` | Issue a federated identity token for a run |
 
 ## Contributing
 
@@ -215,34 +227,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Version History
 
-- 1.4.0 - 2026-05-05
-  - Added `Get-WarpSettings` to read and parse the local Warp `settings.toml` into a structured object (cross-platform path detection)
-  - Added private `ConvertFrom-Toml` helper for TOML parsing
-  - Added `-NoSnapshot`, `-SnapshotUploadTimeout`, and `-SnapshotScriptTimeout` parameters to `Invoke-WarpAgent` (local and cloud)
-  - Added `-Repo` parameter to `Get-WarpAgent` to list skills from a specific GitHub repository
-  - `New-WarpSchedule` now supports `-Skill` as an alternative to `-Prompt` (or both together), plus `-NoEnvironment`
-  - **Upgraded `Set-WarpEnvironment`** from pass-through to explicit parameters: `-Name`, `-Description`, `-RemoveDescription`, `-DockerImage`, `-Repo`, `-RemoveRepo`, `-SetupCommand`, `-RemoveSetupCommand`, `-Force`
-  - **Upgraded `Set-WarpSchedule`** from pass-through to explicit parameters: `-Name`, `-Cron`, `-Prompt`, `-Skill`, `-RemoveSkill`, `-Model`, `-Environment`, `-RemoveEnvironment`, `-Mcp`, `-RemoveMcp`, `-ConfigFile`, `-WorkerID`
-  - **Upgraded `New-WarpIntegration`** from pass-through to explicit parameters: `-Provider` (linear/slack), `-Prompt`, `-Model`, `-Environment`, `-NoEnvironment`, `-Mcp`, `-ConfigFile`, `-WorkerID`
-  - **Upgraded `Set-WarpIntegration`** from pass-through to explicit parameters: `-Provider`, `-Prompt`, `-Model`, `-Environment`, `-RemoveEnvironment`, `-Mcp`, `-RemoveMcp`, `-ConfigFile`, `-WorkerID`
-- 1.3.0 - 2026-04-17
-  - Added `Get-WarpArtifact` and `Save-WarpArtifact` wrappers for the new `oz artifact` subcommand
-  - Added `Get-WarpWhoAmI` wrapper for `oz whoami`
-  - Added `-TaskId` parameter to `Invoke-WarpAgent` to continue/resume an existing task
-  - Added `-Personal` switch to `Invoke-WarpAgent` (cloud) for symmetry with `-Team`
-  - **Breaking:** Removed `-SkillArguments` from `Invoke-WarpAgent`. The underlying `--arg` flag is no longer valid on `oz agent run`; pass skill arguments via `-Prompt` instead (per the CLI's `--skill` help)
-- 1.2.0 - 2026-03-25
-  - Added detection for either warp-terminal or oz and process requests accordingly
-  - Added -SkillsArguments and -SavedPrompt parameters to Invoke-WarpAgent
-    - -Prompt is no longer mandatory if -SavedPrompt is provided
-    - -SkillArguments accepts a string array
-- 1.1.0 - 2026-02-26
-  - Added model tab-completion
-  - Fixed handling of JSON response data
-  - Fixed issues with context caching for conversation tracking
-  - Added functions for conversation history
-  - Added New-WarpSchedule
-  - Renamed Host_ to WorkerID to match warp-terminal references
-  - Added -OneShot parameter to Invoke-WarpAgent to submit prompts without conversation baggage
-- 1.0.0 - 2026-02-20
-  - Initial release
+Version history has moved to [ChangeLog.md](./ChangeLog.md).
