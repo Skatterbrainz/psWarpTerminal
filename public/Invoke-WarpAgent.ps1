@@ -87,6 +87,16 @@ function Invoke-WarpAgent {
     .PARAMETER OneShot
     Run without updating conversation context. Does not stash results in LastAgentResult or LastConversationId, and skips auto-continue.
 
+    .PARAMETER Fast
+    Low-latency mode. Skips automatic conversation continuation, requests plain text output, bypasses event normalization/post-processing,
+    and disables snapshot upload unless explicitly overridden.
+
+    .PARAMETER FastOutputFormat
+    Output format used in fast mode streaming. Defaults to `ndjson` so agent events are visible as they arrive.
+
+    .PARAMETER MeasureTiming
+    Include execution timing diagnostics in the output. Reports argument-build time, CLI startup time, first output token time, and total duration.
+
     .EXAMPLE
     Invoke-WarpAgent -Prompt "Build a REST API"
 
@@ -100,7 +110,7 @@ function Invoke-WarpAgent {
     Invoke-WarpAgent -SavedPrompt "pr-security-review"
 
     .EXAMPLE
-    Invoke-WarpAgent -Cloud -TaskId "task-abc123" -Prompt "now add tests"
+    Invoke-WarpAgent -Cloud -Conversation "conv_abc123" -Prompt "now add tests"
     #>
     [CmdletBinding(DefaultParameterSetName = 'Local')]
     param(
@@ -141,6 +151,8 @@ function Invoke-WarpAgent {
         [Parameter(ParameterSetName = 'Cloud')]
         [string]$WorkerID,
         [Parameter(ParameterSetName = 'Cloud')]
+        [string]$Runner,
+        [Parameter(ParameterSetName = 'Cloud')]
         [string]$Agent,
         [Parameter(ParameterSetName = 'Cloud')]
         [string[]]$Attach,
@@ -148,13 +160,33 @@ function Invoke-WarpAgent {
         [switch]$ComputerUse,
         [Parameter(ParameterSetName = 'Cloud')]
         [switch]$NoComputerUse,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [ValidateSet('oz', 'claude', 'codex')]
+        [string]$Harness,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [string]$ClaudeAuthSecret,
+        [Parameter(ParameterSetName = 'Cloud')]
+        [string]$CodexAuthSecret,
+
+        # Local-only MCP startup behavior
+        [Parameter(ParameterSetName = 'Local')]
+        [switch]$StrictMcpStartup,
+        [Parameter(ParameterSetName = 'Local')]
+        [string]$McpStartupTimeout,
 
         [switch]$NoSnapshot,
         [string]$SnapshotUploadTimeout,
         [string]$SnapshotScriptTimeout,
 
-        [switch]$OneShot
+        [switch]$OneShot,
+        [switch]$Fast,
+        [switch]$MeasureTiming,
+        [ValidateSet('ndjson', 'pretty', 'text', 'json')]
+        [string]$FastOutputFormat = 'ndjson'
     )
+
+    $totalWatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $buildWatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     # Validate required input by mode.
     if ($Cloud.IsPresent) {
@@ -166,7 +198,9 @@ function Invoke-WarpAgent {
     }
 
     # Auto-continue: if no explicit Conversation, try the stashed conversation ID
-    if (-not $OneShot -and -not $Conversation -and $script:LastConversationId) {
+    $effectiveOneShot = $OneShot.IsPresent -or $Fast.IsPresent
+
+    if (-not $effectiveOneShot -and -not $Conversation -and $script:LastConversationId) {
         Write-Verbose "Auto-continuing conversation: $script:LastConversationId"
         $Conversation = $script:LastConversationId
     }
@@ -189,6 +223,8 @@ function Invoke-WarpAgent {
     if ($Cwd)     { $a.Add('-C');        $a.Add($Cwd) }
     if ($Share)   { $a.Add('--share');   $a.Add($Share) }
     if ($Profile) { $a.Add('--profile'); $a.Add($Profile) }
+    if ($StrictMcpStartup.IsPresent) { $a.Add('--strict-mcp-startup') }
+    if ($McpStartupTimeout) { $a.Add('--mcp-startup-timeout'); $a.Add($McpStartupTimeout) }
 
     # Cloud params
     if ($Open.IsPresent)           { $a.Add('--open') }
@@ -197,38 +233,124 @@ function Invoke-WarpAgent {
     if ($NoEnvironment.IsPresent)  { $a.Add('--no-environment') }
     if ($Agent)          { $a.Add('--agent'); $a.Add($Agent) }
     if ($WorkerID)       { $a.Add('--host'); $a.Add($WorkerID) }
+    if ($Runner)         { $a.Add('--runner'); $a.Add($Runner) }
     if ($ComputerUse.IsPresent)    { $a.Add('--computer-use') }
     if ($NoComputerUse.IsPresent)  { $a.Add('--no-computer-use') }
+    if ($Harness)        { $a.Add('--harness'); $a.Add($Harness) }
+    if ($ClaudeAuthSecret) { $a.Add('--claude-auth-secret'); $a.Add($ClaudeAuthSecret) }
+    if ($CodexAuthSecret)  { $a.Add('--codex-auth-secret');  $a.Add($CodexAuthSecret) }
     foreach ($att in $Attach) { $a.Add('--attach'); $a.Add($att) }
 
     # Snapshot params (local + cloud)
-    if ($NoSnapshot.IsPresent)       { $a.Add('--no-snapshot') }
+    if ($NoSnapshot.IsPresent -or $Fast.IsPresent)       { $a.Add('--no-snapshot') }
     if ($SnapshotUploadTimeout)      { $a.Add('--snapshot-upload-timeout'); $a.Add($SnapshotUploadTimeout) }
     if ($SnapshotScriptTimeout)      { $a.Add('--snapshot-script-timeout'); $a.Add($SnapshotScriptTimeout) }
 
-    $result = Invoke-WarpCli -Arguments $a
-    if ($result) {
-        # Parse NDJSON events and extract key fields
-        $events = $result -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
-            try { $_ | ConvertFrom-Json } catch {}
+    $buildWatch.Stop()
+    $buildMs = [int][Math]::Round($buildWatch.Elapsed.TotalMilliseconds)
+
+    if ($Fast.IsPresent) {
+        if ($MeasureTiming.IsPresent) {
+            $timed = Invoke-WarpCli -Arguments $a -RawOutput -OutputFormat $FastOutputFormat -StreamOutput -MeasureTiming
+            if (-not $timed) { return }
+            $totalWatch.Stop()
+            return [PSCustomObject]@{
+                Text   = $timed.Output
+                Timing = [PSCustomObject]@{
+                    ArgumentBuildMs = $buildMs
+                    CliStartupMs    = $timed.Timing.CliStartupMs
+                    FirstOutputMs   = $timed.Timing.FirstOutputMs
+                    CliTotalMs      = $timed.Timing.CliTotalMs
+                    TotalMs         = [int][Math]::Round($totalWatch.Elapsed.TotalMilliseconds)
+                }
+            }
         }
 
-        $convId = ($events | Where-Object type -eq 'system' | Select-Object -First 1).conversation_id
+        return Invoke-WarpCli -Arguments $a -RawOutput -OutputFormat $FastOutputFormat -StreamOutput
+    }
 
-        if (-not $OneShot.IsPresent) {
-            $script:LastAgentResult = $result
-            if ($convId) { $script:LastConversationId = $convId }
+    $timedResult = $null
+    if ($MeasureTiming.IsPresent) {
+        $timedResult = Invoke-WarpCli -Arguments $a -MeasureTiming
+        if (-not $timedResult) { return }
+        $result = $timedResult.Output
+    } else {
+        $result = Invoke-WarpCli -Arguments $a
+    }
+    if (-not $result) { return }
+
+    $normalizeWatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # Handle both JSON and NDJSON output shapes from agent commands.
+    $events = ConvertTo-WarpAgentEvents -InputObject $result
+
+    $convId = $events |
+        ForEach-Object {
+            if ($_.PSObject.Properties['conversation_id']) { $_.conversation_id }
+            elseif ($_.PSObject.Properties['conversationId']) { $_.conversationId }
+            elseif ($_.PSObject.Properties['conversation'] -and $_.conversation.id) { $_.conversation.id }
+        } |
+        Where-Object { $_ } |
+        Select-Object -First 1
+
+    if (-not $effectiveOneShot) {
+        $script:LastAgentResult = $result
+        if ($convId) { $script:LastConversationId = $convId }
+    }
+
+    $agentText = @(
+        $events | ForEach-Object {
+            $type = if ($_.PSObject.Properties['type']) { $_.type } else { $null }
+            $eventType = if ($_.PSObject.Properties['event_type']) { $_.event_type } else { $null }
+            if ($type -in @('agent', 'assistant') -or $eventType -in @('agent', 'assistant', 'message')) {
+                if ($_.PSObject.Properties['text']) { $_.text }
+                elseif ($_.PSObject.Properties['content']) {
+                    if ($_.content -is [string]) { $_.content }
+                    else { $_.content | Out-String }
+                }
+                elseif ($_.PSObject.Properties['message']) { $_.message }
+            }
         }
+    ) -join "`n"
 
-        $agentText = ($events | Where-Object type -eq 'agent').text -join "`n"
-        $files = @($events | Where-Object type -eq 'tool_call' |
-            ForEach-Object { $_.file_paths } | Where-Object { $_ })
-
-        [PSCustomObject]@{
-            ConversationId = $convId
-            Text           = $agentText
-            Files          = $files
-            Events         = $events
+    $files = [System.Collections.Generic.List[string]]::new()
+    foreach ($ev in $events) {
+        if ($ev.PSObject.Properties['file_paths'] -and $ev.file_paths) {
+            foreach ($p in @($ev.file_paths)) {
+                if ($p) { [void]$files.Add([string]$p) }
+            }
+        }
+        if ($ev.PSObject.Properties['files'] -and $ev.files) {
+            foreach ($f in @($ev.files)) {
+                if ($f -is [string]) {
+                    [void]$files.Add($f)
+                } elseif ($f.PSObject.Properties['path'] -and $f.path) {
+                    [void]$files.Add([string]$f.path)
+                }
+            }
         }
     }
+
+    $normalizeWatch.Stop()
+    $totalWatch.Stop()
+
+    $output = [PSCustomObject]@{
+        ConversationId = $convId
+        Text           = $agentText
+        Files          = @($files | Select-Object -Unique)
+        Events         = $events
+    }
+
+    if ($MeasureTiming.IsPresent) {
+        $output | Add-Member -NotePropertyName Timing -NotePropertyValue ([PSCustomObject]@{
+            ArgumentBuildMs = $buildMs
+            CliStartupMs    = $timedResult.Timing.CliStartupMs
+            FirstOutputMs   = $timedResult.Timing.FirstOutputMs
+            CliTotalMs      = $timedResult.Timing.CliTotalMs
+            NormalizeMs     = [int][Math]::Round($normalizeWatch.Elapsed.TotalMilliseconds)
+            TotalMs         = [int][Math]::Round($totalWatch.Elapsed.TotalMilliseconds)
+        })
+    }
+
+    $output
 }

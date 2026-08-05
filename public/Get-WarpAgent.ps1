@@ -10,6 +10,12 @@ function Get-WarpAgent {
     .PARAMETER Id
     Optional. The ID (UID) of a specific agent to retrieve.
 
+    .PARAMETER SortBy
+    Optional. Sort field when listing agents.
+
+    .PARAMETER SortOrder
+    Optional. Sort direction when listing agents.
+
     .EXAMPLE
     Get-WarpAgent
 
@@ -20,14 +26,25 @@ function Get-WarpAgent {
     param(
         [Parameter(ParameterSetName = 'ById', Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [Alias('Uid')]
-        [string]$Id
+        [string]$Id,
+
+        [Parameter(ParameterSetName = 'List')]
+        [ValidateSet('name', 'created-at')]
+        [string]$SortBy,
+
+        [Parameter(ParameterSetName = 'List')]
+        [ValidateSet('asc', 'desc')]
+        [string]$SortOrder
     )
 
     process {
         if ($PSCmdlet.ParameterSetName -eq 'ById') {
             Invoke-WarpCli -Arguments @('agent', 'get', $Id)
         } else {
-            Invoke-WarpCli -Arguments @('agent', 'list')
+            $a = [System.Collections.Generic.List[string]]@('agent', 'list')
+            if ($SortBy) { $a.Add('--sort-by'); $a.Add($SortBy) }
+            if ($SortOrder) { $a.Add('--sort-order'); $a.Add($SortOrder) }
+            Invoke-WarpCli -Arguments $a
         }
     }
 }

@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 05/05/2026
+ms.date: 08/04/2026
 PlatyPS schema version: 2024-05-01
 title: Get-WarpAgent
 ---
@@ -17,75 +17,36 @@ Retrieves Warp reusable agents.
 
 ## SYNTAX
 
-### List
+### List (Default)
 
-```
-Get-WarpAgent [<CommonParameters>]
+```powershell
+Get-WarpAgent [-SortBy <string>] [-SortOrder <string>] [<CommonParameters>]
 ```
 
 ### ById
 
+```powershell
+Get-WarpAgent -Id <string> [<CommonParameters>]
 ```
-Get-WarpAgent [-Id] <string> [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list all available reusable agents,
-or retrieve a single agent by ID.
+Lists agents or gets one by UID.
+
+## PARAMETERS
+
+### -SortBy
+
+Optional sort field for list mode. Accepted values: `name`, `created-at`.
+
+### -SortOrder
+
+Optional sort direction for list mode. Accepted values: `asc`, `desc`.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpAgent
-
-### EXAMPLE 2
-
-Get-WarpAgent -Id "ag_abc123"
-
-## PARAMETERS
-
-### -Id
-
-Optional. The ID (UID) of a specific agent to retrieve.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: [Uid]
-ParameterSets:
-- Name: ById
-  Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Get-WarpAgent -SortBy created-at -SortOrder desc
 ```
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

@@ -12,6 +12,9 @@ function New-WarpAgent {
     .PARAMETER Description
     Optional. Description of the agent.
 
+    .PARAMETER Prompt
+    Optional. Base prompt for runs of this agent.
+
     .PARAMETER Secret
     Optional. One or more secret names to attach.
 
@@ -33,6 +36,7 @@ function New-WarpAgent {
         [string]$Name,
 
         [string]$Description,
+        [string]$Prompt,
         [string[]]$Secret,
         [string[]]$Skill,
         [string]$BaseModel,
@@ -42,6 +46,7 @@ function New-WarpAgent {
     $a = [System.Collections.Generic.List[string]]@('agent', 'create', '--name', $Name)
 
     if ($Description)  { $a.Add('--description'); $a.Add($Description) }
+    if ($Prompt)       { $a.Add('--prompt'); $a.Add($Prompt) }
     foreach ($s in $Secret) { $a.Add('--secret'); $a.Add($s) }
     foreach ($k in $Skill)  { $a.Add('--skill'); $a.Add($k) }
     if ($BaseModel)   { $a.Add('--base-model'); $a.Add($BaseModel) }

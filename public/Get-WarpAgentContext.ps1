@@ -28,24 +28,16 @@ function Get-WarpAgentContext {
         return
     }
 
-    if ($AsObject -and $script:LastAgentResult -is [string]) {
-        $text = $script:LastAgentResult -replace '(?m)^```json\s*' -replace '(?m)^```\s*'
-
-        # Parse NDJSON lines into raw events
-        $events = $null
-        try {
-            $events = @($text -split "`n" | Where-Object { $_.Trim() -ne '' } | ForEach-Object {
-                $_ | ConvertFrom-Json
-            })
-        } catch {
-            Write-Error "Unable to convert stored context to object: $_"
+    if ($AsObject) {
+        $events = ConvertTo-WarpAgentEvents -InputObject $script:LastAgentResult
+        if (-not $events -or $events.Count -eq 0) {
             $script:LastAgentResult
             return
         }
 
         # Normalize all events to uniform columns
         foreach ($ev in $events) {
-            $filePaths = if ($ev.file_paths) { $ev.file_paths -join '; ' }
+            $filePaths = if ($ev.PSObject.Properties['file_paths'] -and $ev.file_paths) { @($ev.file_paths) -join '; ' }
                          elseif ($ev.files) { ($ev.files | ForEach-Object { $_.path }) -join '; ' }
                          else { $null }
             [PSCustomObject]@{

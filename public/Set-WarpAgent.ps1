@@ -18,6 +18,12 @@ function Set-WarpAgent {
     .PARAMETER RemoveDescription
     Remove the agent description.
 
+    .PARAMETER Prompt
+    Optional. Replacement base prompt for runs executed by this agent.
+
+    .PARAMETER RemovePrompt
+    Remove the base prompt from this agent.
+
     .PARAMETER AddSecret
     Optional. One or more secret names to add.
 
@@ -60,6 +66,8 @@ function Set-WarpAgent {
         [string]$Name,
         [string]$Description,
         [switch]$RemoveDescription,
+        [string]$Prompt,
+        [switch]$RemovePrompt,
         [string[]]$AddSecret,
         [string[]]$RemoveSecret,
         [switch]$RemoveAllSecrets,
@@ -78,6 +86,8 @@ function Set-WarpAgent {
         if ($Name) { $a.Add('-n'); $a.Add($Name) }
         if ($Description) { $a.Add('--description'); $a.Add($Description) }
         if ($RemoveDescription.IsPresent) { $a.Add('--remove-description') }
+        if ($Prompt) { $a.Add('--prompt'); $a.Add($Prompt) }
+        if ($RemovePrompt.IsPresent) { $a.Add('--remove-prompt') }
 
         foreach ($s in $AddSecret)    { $a.Add('--add-secret'); $a.Add($s) }
         foreach ($s in $RemoveSecret) { $a.Add('--remove-secret'); $a.Add($s) }

@@ -17,7 +17,7 @@ Lists active Oz API keys.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Default
 
 ```
 Get-WarpApiKey [[-SortBy] <string>] [[-SortOrder] <string>] [<CommonParameters>]

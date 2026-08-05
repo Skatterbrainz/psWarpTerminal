@@ -17,16 +17,11 @@ Clears the stored agent conversation context.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Default
 
 ```
 Clear-WarpAgentContext [<CommonParameters>]
 ```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
@@ -39,21 +34,3 @@ Resets the module-scoped agent result so the next Invoke-WarpAgent call starts a
 Clear-WarpAgentContext
 
 ## PARAMETERS
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

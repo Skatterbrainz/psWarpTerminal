@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 08/04/2026
 PlatyPS schema version: 2024-05-01
 title: Set-WarpSecret
 ---
@@ -17,93 +17,24 @@ Updates an existing Warp secret.
 
 ## SYNTAX
 
-### __AllParameterSets
-
+```powershell
+Set-WarpSecret -Id <string> [[-PassThru] <string[]>] [<CommonParameters>]
 ```
-Set-WarpSecret [-Id] <string> [-PassThru <string[]>] [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to update a secret.
-Additional arguments are passed through to the CLI.
+Updates a secret by name or UID and forwards additional CLI arguments to `secret update`.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Set-WarpSecret -Id "secret-abc123" -f ./new-value.txt
-
-## PARAMETERS
-
-### -Id
-
-Required.
-The ID of the secret to update.
-May be piped from another command.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Set-WarpSecret -Id "MY_SECRET" --value
 ```
 
-### -PassThru
+### EXAMPLE 2
 
-Optional.
-Additional arguments forwarded to the Warp CLI update command.
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: true
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Set-WarpSecret -Id "MY_SECRET" -f ./new-value.txt -d "rotated key"
 ```
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-### System.String
-
-{{ Fill in the Description }}
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

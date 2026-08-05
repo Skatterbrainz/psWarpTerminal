@@ -7,7 +7,7 @@ function Set-WarpSecret {
     This function invokes the Warp CLI to update a secret. Additional arguments are passed through to the CLI.
 
     .PARAMETER Id
-    Required. The ID of the secret to update. May be piped from another command.
+    Required. The name or UID of the secret to update. May be piped from another command.
 
     .PARAMETER PassThru
     Optional. Additional arguments forwarded to the Warp CLI update command.
@@ -18,6 +18,7 @@ function Set-WarpSecret {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
+        [Alias('Name', 'Uid')]
         [string]$Id,
 
         [Parameter(ValueFromRemainingArguments)]

@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 02/26/2026
+ms.date: 08/04/2026
 PlatyPS schema version: 2024-05-01
 title: Get-WarpRun
 ---
@@ -19,104 +19,28 @@ Retrieves Warp runs.
 
 ### List (Default)
 
-```
-Get-WarpRun [-Limit <int>] [<CommonParameters>]
+```powershell
+Get-WarpRun [-Limit <int>] [-State <string[]>] [-Source <string>] [-ExecutionLocation <string>]
+ [-Creator <string>] [-Environment <string>] [-Skill <string>] [-Schedule <string>] [-AncestorRun <string>]
+ [-Name <string>] [-Model <string>] [-ArtifactType <string>] [-CreatedAfter <string>] [-CreatedBefore <string>]
+ [-UpdatedAfter <string>] [-Query <string>] [-SortBy <string>] [-SortOrder <string>] [-Cursor <string>]
+ [<CommonParameters>]
 ```
 
 ### ById
 
+```powershell
+Get-WarpRun -TaskId <string> [-Conversation] [<CommonParameters>]
 ```
-Get-WarpRun [-TaskId] <string> [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to list runs with optional filters, or
-get a specific run by ID.
+Lists runs with filters or gets a specific run. Use `-Conversation` in by-id mode to request transcript output from the CLI.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
-Get-WarpRun
-
-### EXAMPLE 2
-
-Get-WarpRun -Limit 25 -State in-progress,succeeded -Source scheduled-agent -SortBy updated-at -SortOrder desc
-
-## PARAMETERS
-
-### -Limit
-
-Optional.
-The maximum number of runs to retrieve.
-Defaults to 10.
-
-```yaml
-Type: System.Int32
-DefaultValue: 10
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: List
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Get-WarpRun -TaskId "run_abc123" -Conversation
 ```
-
-### -TaskId
-
-Required.
-The ID of a specific run to retrieve.
-If not provided, all runs will be listed.
-May be piped from another command that outputs an object with an 'Id' property.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases:
-- Id
-ParameterSets:
-- Name: ById
-  Position: 0
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-### System.String
-
-{{ Fill in the Description }}
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

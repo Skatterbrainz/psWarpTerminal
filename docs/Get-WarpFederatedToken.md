@@ -17,7 +17,7 @@ Issues a federated identity token for an Oz run.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Default
 
 ```
 Get-WarpFederatedToken -RunId <string> -Audience <string> [-Duration <string>] [-SubjectTemplate <string[]>] [<CommonParameters>]

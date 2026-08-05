@@ -23,11 +23,6 @@ Returns information about the currently logged-in Warp user.
 Get-WarpWhoAmI [<CommonParameters>]
 ```
 
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
-
 ## DESCRIPTION
 
 This function invokes the Warp CLI `whoami` command and returns the parsed JSON response describing the authenticated user (email, team, etc.).
@@ -43,20 +38,3 @@ Get-WarpWhoAmI
 (Get-WarpWhoAmI).email
 
 ## PARAMETERS
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}

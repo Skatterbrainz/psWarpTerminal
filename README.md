@@ -1,7 +1,7 @@
 # psWarpTerminal
 
 PowerShell wrapper for the Warp Terminal (warp-terminal or Oz) CLI
-- Updated: June 7, 2026
+- Updated: August 4, 2026
 
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
@@ -14,7 +14,7 @@ Idiomatic PowerShell functions that wrap the `warp-terminal` or `oz` CLI, giving
 
 ## 🎯 Overview
 
-This module exposes 40 public functions covering the current `oz` CLI surface. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
+This module exposes 55 public functions covering the current `oz` CLI surface. Every function returns parsed `PSCustomObject` output (via `--output-format json` under the hood), so results plug directly into `Format-Table`, `Where-Object`, `Export-Csv`, and the rest of the PowerShell ecosystem.
 
 ## Important Note
 
@@ -23,10 +23,12 @@ Both ```warp-terminal``` and ```oz``` CLI are still being developed, so features
 ## ✨ Features
 
 - 🤖 **Agent Operations** - Launch local or cloud agents, list available agents and profiles, with automatic conversation continuation
-- 📋 **Run Management** - List and inspect ambient agent task runs
+- 📋 **Run Management** - List runs, retrieve run conversations, and send/read/watch run messages
 - 🧠 **Reusable Agent Management** - Create, update, inspect, list, and delete reusable agents
 - 📦 **Artifact Management** - Fetch metadata for and download files produced by cloud agent runs
 - 🌐 **Environment Management** - Create, update, delete, and inspect cloud environments and base images
+- 🏃 **Runner Management** - List, create, update, and delete cloud runners
+- 🧠 **Memory Management** - Manage memory stores and memory entries (create/update/delete/version)
 - 🔐 **Secret Management** - Create, update, delete, and list secrets in Warp's secure storage
 - 🔑 **API Key Management** - Create, list, and expire Oz API keys
 - ⏰ **Schedule Management** - Create, update, pause, resume, and delete scheduled (cron) agents
@@ -118,9 +120,19 @@ Get-WarpAgentContext
 # Start fresh by clearing the context
 Clear-WarpAgentContext
 Invoke-WarpAgent -Prompt "Something completely different"
+
+# Lowest-latency query (Fast mode skips auto-continue and disables snapshot upload)
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast
+
+# If you prefer human-readable stream instead of NDJSON events
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast -FastOutputFormat pretty
+
+# Diagnose latency stages
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast -MeasureTiming | Select-Object -ExpandProperty Timing
 ```
 
 Use `-Verbose` to see when auto-continuation is applied. You can always override by passing `-Conversation` explicitly.
+Use `-Fast` when you want quickest response time for simple prompts and do not need normalized event output. Fast mode defaults to `ndjson` streaming so event activity is visible; use `-FastOutputFormat pretty` for a human-readable stream.
 
 ## 📖 Function Reference
 
@@ -130,7 +142,7 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 
 | Function | Description |
 |---|---|
-| `Invoke-WarpAgent` | Run an agent locally (default) or in the cloud (`-Cloud`). Auto-continues conversations. Supports snapshot control |
+| `Invoke-WarpAgent` | Run an agent locally (default) or in the cloud (`-Cloud`). Auto-continues conversations by default. Use `-Fast` for low-latency raw output |
 | `Get-WarpAgent` | List reusable agents or get one by `-Id` |
 | `Get-WarpSkill` | List available skills, optionally filtered by `-Repo` |
 | `New-WarpAgent` | Create a reusable agent |
@@ -145,6 +157,11 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 | Function | Description |
 |---|---|
 | `Get-WarpRun` | List runs or get a specific run by `-TaskId` |
+| `Get-WarpRunConversation` | Get a run conversation by conversation ID |
+| `Get-WarpRunMessage` | List run inbox messages or read one by message ID |
+| `Send-WarpRunMessage` | Send a message from one run to one or more recipient runs |
+| `Set-WarpRunMessage` | Mark a run message as delivered |
+| `Watch-WarpRunMessage` | Watch for new messages delivered to a run inbox |
 
 ### Artifact
 
@@ -168,9 +185,9 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 | Function | Description |
 |---|---|
 | `Get-WarpSecret` | List secrets |
-| `New-WarpSecret` | Create a secret |
-| `Set-WarpSecret` | Update a secret |
-| `Remove-WarpSecret` | Delete a secret (supports `-WhatIf`) |
+| `New-WarpSecret` | Create a secret (raw, Claude auth, or Codex auth) |
+| `Set-WarpSecret` | Update a secret by name/UID, including passthrough CLI flags |
+| `Remove-WarpSecret` | Delete a secret by name/UID (supports `-WhatIf`) |
 
 ### Schedule
 
@@ -190,6 +207,26 @@ Refer to the [docs](./docs/) folder for current function references. Complete li
 | `Get-WarpIntegration` | List integrations |
 | `New-WarpIntegration` | Create an integration for a provider (`linear`, `slack`) with environment, MCP, and prompt support |
 | `Set-WarpIntegration` | Update an integration's prompt, environment, MCP servers, model, or worker host |
+
+### Runner
+
+| Function | Description |
+|---|---|
+| `Get-WarpRunner` | List runners |
+| `New-WarpRunner` | Create a runner |
+| `Set-WarpRunner` | Update a runner by UID or name |
+| `Remove-WarpRunner` | Delete a runner (supports `-WhatIf`) |
+
+### Memory
+
+| Function | Description |
+|---|---|
+| `Get-WarpMemoryStore` | List memory stores, get a store, or list store-attached agents |
+| `Set-WarpMemoryStore` | Update a memory store description |
+| `Get-WarpMemory` | List memories in a store or list memory versions |
+| `New-WarpMemory` | Create a memory in a store |
+| `Set-WarpMemory` | Update a memory and create a new version |
+| `Remove-WarpMemory` | Delete a memory (supports `-WhatIf`) |
 
 ### Settings
 
@@ -228,3 +265,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Version History
 
 Version history has moved to [ChangeLog.md](./ChangeLog.md).
+
+## Errata
+
+This module was developed with the assistance of Warp Terminal, Oz, Claude, OpenAI, and GitHub Copilot. All code has been reviewed, retouched, refactored, regurgitated and re-something'd by a humanoid idiot who talks to his screen like it's actually listening and talking back.

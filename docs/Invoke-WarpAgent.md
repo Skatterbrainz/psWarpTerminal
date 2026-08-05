@@ -4,7 +4,7 @@ external help file: psWarpTerminal-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: psWarpTerminal
-ms.date: 05/05/2026
+ms.date: 08/04/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-WarpAgent
 ---
@@ -19,666 +19,76 @@ Runs a Warp Oz agent locally or in the cloud.
 
 ### Local (Default)
 
-```
+```powershell
 Invoke-WarpAgent [[-Prompt] <string>] [-Name <string>] [-Model <string>] [-Environment <string>]
- [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>] [-Conversation <string>]
- [-Mcp <string[]>] [-ConfigFile <string>] [-Cwd <string>] [-Share <string>] [-Profile <string>]
- [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
- [-OneShot] [<CommonParameters>]
+ [-Skill <string>] [-SavedPrompt <string>] [-TaskId <string>] [-Conversation <string>] [-Mcp <string[]>]
+ [-ConfigFile <string>] [-Cwd <string>] [-Share <string>] [-Profile <string>] [-StrictMcpStartup]
+ [-McpStartupTimeout <string>] [-NoSnapshot] [-SnapshotUploadTimeout <string>]
+ [-SnapshotScriptTimeout <string>] [-OneShot] [-Fast] [-MeasureTiming] [-FastOutputFormat <string>]
+ [<CommonParameters>]
 ```
 
 ### Cloud
 
+```powershell
+Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>] [-Environment <string>]
+ [-Skill <string>] [-SavedPrompt <string>] [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>]
+ [-Open] [-Team] [-Personal] [-NoEnvironment] [-WorkerID <string>] [-Runner <string>] [-Agent <string>]
+ [-Attach <string[]>] [-ComputerUse] [-NoComputerUse] [-Harness <string>] [-ClaudeAuthSecret <string>]
+ [-CodexAuthSecret <string>] [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
+ [-OneShot] [-Fast] [-MeasureTiming] [-FastOutputFormat <string>] [<CommonParameters>]
 ```
-Invoke-WarpAgent [[-Prompt] <string>] -Cloud [-Name <string>] [-Model <string>]
- [-Environment <string>] [-Skill <string>] [-SavedPrompt <string>]
- [-Conversation <string>] [-Mcp <string[]>] [-ConfigFile <string>] [-Open] [-Team] [-Personal]
- [-NoEnvironment] [-WorkerID <string>] [-Agent <string>] [-Attach <string[]>] [-ComputerUse] [-NoComputerUse]
- [-NoSnapshot] [-SnapshotUploadTimeout <string>] [-SnapshotScriptTimeout <string>]
- [-OneShot] [<CommonParameters>]
-```
-
-## ALIASES
-
-This cmdlet has the following aliases,
-  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-This function invokes the Warp CLI to run an agent.
-By default the agent runs locally.
-Use the -Cloud switch to dispatch a remote cloud agent.
+Invokes `agent run` or `agent run-cloud` and returns normalized result fields for conversation, text, files, and events.
+Use `-Fast` for low-latency requests. In fast mode, the command skips automatic conversation continuation,
+streams output, bypasses event normalization, and disables snapshot upload by default.
+
+Use `-FastOutputFormat` to control fast-mode streaming format. The default is `ndjson`, which shows
+event records as they arrive.
+
+Use `-MeasureTiming` to return timing diagnostics including argument-build, CLI startup,
+first output token, and total duration.
+
+When combined with `-Fast`, timing uses native streaming execution and may report
+`CliStartupMs` / `FirstOutputMs` as null while still reporting total duration.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
+```powershell
 Invoke-WarpAgent -Prompt "Build a REST API"
+```
 
 ### EXAMPLE 2
 
-Invoke-WarpAgent -Cloud -Prompt "Review open PRs" -Environment "env-id" -Open
+```powershell
+Invoke-WarpAgent -Cloud -Harness claude -ClaudeAuthSecret "ANTHROPIC_API_KEY" -Prompt "Review latest PR"
+```
 
 ### EXAMPLE 3
 
-Invoke-WarpAgent -Skill "myorg/backend:code-review" -Prompt "focus on PR #42 on main branch"
+```powershell
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast -OneShot -NoSnapshot
+```
 
 ### EXAMPLE 4
 
-Invoke-WarpAgent -SavedPrompt "pr-security-review"
+```powershell
+# Fast mode already implies one-shot semantics and disables snapshot upload
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast
+```
 
 ### EXAMPLE 5
 
-Invoke-WarpAgent -Cloud -Agent "ag_abc123" -Prompt "now add tests"
-
-## PARAMETERS
-
-### -Attach
-
-Cloud only.
-One or more image file paths to attach (max 5).
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast -FastOutputFormat pretty
 ```
 
-### -Cloud
+### EXAMPLE 6
 
-Switch to dispatch the agent remotely instead of running locally.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
+```powershell
+Invoke-WarpAgent -Prompt "what is the capital of Missouri?" -Fast -MeasureTiming
 ```
-
-### -ComputerUse
-
-Cloud only.
-Enable computer use capabilities.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -ConfigFile
-
-Optional.
-Path to a YAML or JSON configuration file.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Conversation
-
-Optional.
-Continue an existing conversation by ID.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Cwd
-
-Local only.
-Working directory for the agent.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Local
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Environment
-
-Optional.
-Cloud environment ID to use.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -WorkerID
-
-Cloud only.
-Where the job should be hosted. Use "warp" for Warp infrastructure, or a self-hosted worker name.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Mcp
-
-Optional.
-One or more MCP server specs (path or inline JSON).
-
-```yaml
-Type: System.String[]
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Model
-
-Optional.
-Override the base model.
-Use Get-WarpModel to see available models.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Name
-
-Optional.
-A name for this agent task.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -NoComputerUse
-
-Cloud only.
-Disable computer use capabilities.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -NoEnvironment
-
-Cloud only.
-Do not run in an environment.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Open
-
-Cloud only.
-Open the session in Warp once available.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Profile
-
-Local only.
-Agent profile ID to configure the session.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Local
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Prompt
-
-Optional.
-The prompt for the agent to carry out. Either -Prompt or -SavedPrompt must be specified.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 0
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Share
-
-Local only.
-Share the session (e.g.
-"team:view").
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Local
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -SavedPrompt
-
-Optional.
-Name of a saved prompt from Warp Drive to use instead of an inline prompt. Either -Prompt or -SavedPrompt must be specified.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Skill
-
-Optional.
-Skill spec to use as the base prompt (e.g.
-"repo:skill_name").
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -TaskId
-
-Local only.
-Continue or resume an existing agent task by its ID.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Local
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Agent
-
-Cloud only.
-Execute this run as an existing reusable agent UID.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Personal
-
-Cloud only.
-Create the task as private to your account.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -NoSnapshot
-
-Disable the end-of-run workspace snapshot upload.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -SnapshotUploadTimeout
-
-Maximum time to wait for the end-of-run snapshot upload (e.g. "5m", "300s").
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -SnapshotScriptTimeout
-
-Maximum time to wait for the declarations script before uploading the snapshot (e.g. "2m").
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -OneShot
-
-Run without updating conversation context. Does not stash results in LastAgentResult or LastConversationId, and skips auto-continue.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Team
-
-Cloud only.
-Make the task visible to all team members.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: Cloud
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### CommonParameters
-
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
--InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
--ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
-[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
-
-## INPUTS
-
-## OUTPUTS
-
-## NOTES
-
-## RELATED LINKS
-
-{{ Fill in the related links here }}
-

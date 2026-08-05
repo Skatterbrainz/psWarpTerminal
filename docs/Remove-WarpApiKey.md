@@ -17,7 +17,7 @@ Expires an Oz API key immediately.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Default
 
 ```
 Remove-WarpApiKey [-Id] <string> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]

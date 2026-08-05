@@ -17,7 +17,7 @@ Deletes a reusable Warp agent.
 
 ## SYNTAX
 
-### __AllParameterSets
+### Default
 
 ```
 Remove-WarpAgent [-Id] <string> [-WhatIf] [-Confirm] [<CommonParameters>]
