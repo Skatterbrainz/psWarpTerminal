@@ -1,6 +1,10 @@
 # psWarpTerminal
 
 PowerShell wrapper for the Warp Terminal (warp-terminal or Oz) CLI
+
+- Notice: August 8, 2026
+  - With the release of Warp CLI, this module isn't really necessary. Therefore, no further updates are planned for this module.
+
 - Updated: June 7, 2026
 
 
